@@ -6956,22 +6956,36 @@ function Impl.CameraHoldTick()
         if now < H.Next then return end
         H.Next = now + 5
         H.W = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Camera Distance")
+        H.Smooth = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Smooth Zoom")
+        H.SmoothTime = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Smoothness Duration")
+        H.Mode = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Zoom using Wheel")
         if Dbg.On and H.Found ~= (H.W ~= nil) then
             H.Found = H.W ~= nil
             Dbg.Log("camera", H.W and ("umbrella camera distance slider found, value " .. tostring(H.W:Get())) or "umbrella camera distance slider not found")
+            if H.Mode then
+                local okL, list = pcall(H.Mode.List, H.Mode)
+                Dbg.Log("camera", "zoom using wheel: selected " .. tostring(H.Mode:Get()) .. ", options " .. (okL and type(list) == "table" and table.concat(list, " | ") or "unknown"))
+            end
         end
         if not H.W then return end
     end
     local cur = H.W:Get()
-    if now - H.At < 0.4 then
+    local window = 0.5
+    if H.Smooth and H.SmoothTime and H.Smooth:Get() == true then
+        window = window + (tonumber(H.SmoothTime:Get()) or 0)
+    end
+    if now - H.At < window then
         if H.Value and cur ~= H.Value then
             H.W:Set(H.Value)
-            if Dbg.On and now - (H.LogAt or 0) > 1 then
+            if Dbg.On and now - (H.LogAt or 0) > 0.3 then
                 H.LogAt = now
-                Dbg.Log("camera", string.format("wheel over the island moved the camera distance %s -> %s, put back, slider now reads %s", tostring(H.Value), tostring(cur), tostring(H.W:Get())))
+                Dbg.Log("camera", string.format("camera distance moved %s -> %s, %.2f s after the wheel, put back, slider now reads %s", tostring(H.Value), tostring(cur), now - H.At, tostring(H.W:Get())))
             end
         end
     else
+        if Dbg.On and H.Value and cur ~= H.Value and now - H.At < 5 then
+            Dbg.Log("camera", string.format("camera distance moved %s -> %s outside the hold, %.2f s after the wheel", tostring(H.Value), tostring(cur), now - H.At))
+        end
         H.Value = cur
     end
 end
