@@ -6949,26 +6949,81 @@ end
 
 Impl.CamHold = { At = 0, Next = 0 }
 
+function Impl.CameraFind(now)
+    local H = Impl.CamHold
+    if H.W or now < H.Next then return end
+    H.Next = now + 5
+    H.W = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Camera Distance")
+    H.Smooth = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Smooth Zoom")
+    H.SmoothTime = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Smoothness Duration")
+    H.Mode = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Zoom using Wheel")
+    H.Plain, H.Alt = nil, nil
+    local names = "unknown"
+    if H.Mode then
+        local okL, list = pcall(H.Mode.List, H.Mode)
+        if okL and type(list) == "table" then
+            names = table.concat(list, " | ")
+            local ctrl
+            for i, name in ipairs(list) do
+                local up = string.upper(tostring(name))
+                if string.find(up, "ALT", 1, true) then
+                    H.Alt = H.Alt or (i - 1)
+                elseif string.find(up, "CTRL", 1, true) then
+                    ctrl = ctrl or (i - 1)
+                else
+                    H.Plain = H.Plain or (i - 1)
+                end
+            end
+            H.Alt = H.Alt or ctrl
+        end
+        local left = Config.ReadInt("dynamic_island", "cam_wheel", 0)
+        if left > 0 then
+            if H.Alt and H.Mode:Get() == H.Alt then H.Mode:Set(left - 1) end
+            Config.WriteInt("dynamic_island", "cam_wheel", 0)
+            if Dbg.On then Dbg.Log("camera", "wheel zoom mode put back after a reload") end
+        end
+    end
+    if Dbg.On and H.Found ~= (H.W ~= nil) then
+        H.Found = H.W ~= nil
+        Dbg.Log("camera", H.W and ("umbrella camera distance slider found, value " .. tostring(H.W:Get())) or "umbrella camera distance slider not found")
+        Dbg.Log("camera", string.format("zoom using wheel: selected %s, options %s, plain %s, with keys %s", tostring(H.Mode and H.Mode:Get()), names, tostring(H.Plain), tostring(H.Alt)))
+    end
+end
+
+function Impl.CameraOverIsland()
+    if not UI or not UI.Main.Enabled:Get() then return false end
+    if not (Engine.IsInGame and Engine.IsInGame()) then return false end
+    local st = StateMachine.TargetState
+    if not IsMediaActive() and st ~= StateMachine.States.LARGE_IDLE and st ~= StateMachine.States.NOTIF_CENTER then return false end
+    local lay = GetIslandLayout()
+    if not lay or lay.w <= 0 or lay.h <= 0 then return false end
+    local mx, my = Input.GetCursorPos()
+    return mx >= lay.x - 12 and mx <= lay.x + lay.w + 12 and my >= lay.y - 12 and my <= lay.y + lay.h + 12
+end
+
 function Impl.CameraHoldTick()
     local H = Impl.CamHold
     local now = os.clock()
-    if not H.W then
-        if now < H.Next then return end
-        H.Next = now + 5
-        H.W = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Camera Distance")
-        H.Smooth = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Smooth Zoom")
-        H.SmoothTime = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Smoothness Duration")
-        H.Mode = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Zoom using Wheel")
-        if Dbg.On and H.Found ~= (H.W ~= nil) then
-            H.Found = H.W ~= nil
-            Dbg.Log("camera", H.W and ("umbrella camera distance slider found, value " .. tostring(H.W:Get())) or "umbrella camera distance slider not found")
-            if H.Mode then
-                local okL, list = pcall(H.Mode.List, H.Mode)
-                Dbg.Log("camera", "zoom using wheel: selected " .. tostring(H.Mode:Get()) .. ", options " .. (okL and type(list) == "table" and table.concat(list, " | ") or "unknown"))
-            end
+    Impl.CameraFind(now)
+
+    if H.Mode and H.Alt and H.Plain then
+        if Impl.CameraOverIsland() then H.OverAt = now end
+        local over = H.OverAt ~= nil and now - H.OverAt < 0.25
+        if over and not H.Orig and H.Mode:Get() == H.Plain then
+            H.Orig = H.Plain
+            Config.WriteInt("dynamic_island", "cam_wheel", H.Orig + 1)
+            H.Mode:Set(H.Alt)
+            if Dbg.On then Dbg.Log("camera", "cursor over the island, umbrella wheel zoom switched to the mode with keys") end
+        elseif not over and H.Orig then
+            if H.Mode:Get() == H.Alt then H.Mode:Set(H.Orig) end
+            H.Orig = nil
+            Config.WriteInt("dynamic_island", "cam_wheel", 0)
+            if Dbg.On then Dbg.Log("camera", "cursor left the island, umbrella wheel zoom is back to the plain wheel") end
         end
-        if not H.W then return end
+        return
     end
+
+    if not H.W then return end
     local cur = H.W:Get()
     local window = 0.5
     if H.Smooth and H.SmoothTime and H.Smooth:Get() == true then
@@ -6979,13 +7034,10 @@ function Impl.CameraHoldTick()
             H.W:Set(H.Value)
             if Dbg.On and now - (H.LogAt or 0) > 0.3 then
                 H.LogAt = now
-                Dbg.Log("camera", string.format("camera distance moved %s -> %s, %.2f s after the wheel, put back, slider now reads %s", tostring(H.Value), tostring(cur), now - H.At, tostring(H.W:Get())))
+                Dbg.Log("camera", string.format("camera distance moved %s -> %s, %.2f s after the wheel, put back", tostring(H.Value), tostring(cur), now - H.At))
             end
         end
     else
-        if Dbg.On and H.Value and cur ~= H.Value and now - H.At < 5 then
-            Dbg.Log("camera", string.format("camera distance moved %s -> %s outside the hold, %.2f s after the wheel", tostring(H.Value), tostring(cur), now - H.At))
-        end
         H.Value = cur
     end
 end
@@ -6993,7 +7045,7 @@ end
 function Impl.CameraHold(nowClk)
     local H = Impl.CamHold
     if Dbg.On and nowClk - H.At > 1 then
-        Dbg.Log("camera", "wheel over the island, camera distance " .. (H.W and tostring(H.W:Get()) or "unknown") .. ", remembered " .. tostring(H.Value))
+        Dbg.Log("camera", string.format("wheel over the island, camera distance %s, wheel zoom mode %s", H.W and tostring(H.W:Get()) or "unknown", H.Mode and tostring(H.Mode:Get()) or "unknown"))
     end
     H.At = nowClk
     Impl.CameraHoldTick()
