@@ -6949,6 +6949,16 @@ end
 
 Impl.CamHold = { At = 0, Next = 0 }
 
+function Impl.CameraMark(value)
+    local store = _G.Config
+    if type(store) ~= "table" and type(store) ~= "userdata" then return nil end
+    if value == nil then
+        local ok, v = pcall(store.ReadInt, "dynamic_island", "cam_wheel", 0)
+        return ok and tonumber(v) or nil
+    end
+    pcall(store.WriteInt, "dynamic_island", "cam_wheel", value)
+end
+
 function Impl.CameraFind(now)
     local H = Impl.CamHold
     if H.W or now < H.Next then return end
@@ -6963,23 +6973,26 @@ function Impl.CameraFind(now)
         local okL, list = pcall(H.Mode.List, H.Mode)
         if okL and type(list) == "table" then
             names = table.concat(list, " | ")
-            local ctrl
+            local ctrl, other
             for i, name in ipairs(list) do
                 local up = string.upper(tostring(name))
                 if string.find(up, "ALT", 1, true) then
                     H.Alt = H.Alt or (i - 1)
                 elseif string.find(up, "CTRL", 1, true) then
                     ctrl = ctrl or (i - 1)
-                else
+                elseif string.find(up, "WHEEL", 1, true) then
                     H.Plain = H.Plain or (i - 1)
+                elseif up ~= "OFF" then
+                    other = i - 1
                 end
             end
             H.Alt = H.Alt or ctrl
+            H.Plain = H.Plain or other
         end
-        local left = Config.ReadInt("dynamic_island", "cam_wheel", 0)
-        if left > 0 then
+        local left = Impl.CameraMark()
+        if left and left > 0 then
             if H.Alt and H.Mode:Get() == H.Alt then H.Mode:Set(left - 1) end
-            Config.WriteInt("dynamic_island", "cam_wheel", 0)
+            Impl.CameraMark(0)
             if Dbg.On then Dbg.Log("camera", "wheel zoom mode put back after a reload") end
         end
     end
@@ -7011,13 +7024,13 @@ function Impl.CameraHoldTick()
         local over = H.OverAt ~= nil and now - H.OverAt < 0.25
         if over and not H.Orig and H.Mode:Get() == H.Plain then
             H.Orig = H.Plain
-            Config.WriteInt("dynamic_island", "cam_wheel", H.Orig + 1)
             H.Mode:Set(H.Alt)
+            Impl.CameraMark(H.Orig + 1)
             if Dbg.On then Dbg.Log("camera", "cursor over the island, umbrella wheel zoom switched to the mode with keys") end
         elseif not over and H.Orig then
             if H.Mode:Get() == H.Alt then H.Mode:Set(H.Orig) end
             H.Orig = nil
-            Config.WriteInt("dynamic_island", "cam_wheel", 0)
+            Impl.CameraMark(0)
             if Dbg.On then Dbg.Log("camera", "cursor left the island, umbrella wheel zoom is back to the plain wheel") end
         end
         return
