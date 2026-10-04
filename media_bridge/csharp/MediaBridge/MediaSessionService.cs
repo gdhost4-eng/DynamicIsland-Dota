@@ -559,6 +559,7 @@ public static class MediaSessionService
             string targetFam = GetMediaSessionFamily(session);
             CurrentFamily = targetFam;
             CurrentAppId = appId;
+            LikeState.Tick(LikeState.PlayerOf(targetFam, appId), title != "" ? trackKey : "");
             if (isPlaying && targetFam != "" && AppAudioControl.IsMusicPlayerFamily(targetFam))
             {
                 int audioState = AppAudioControl.GetFamilyAudioState(targetFam);
@@ -667,8 +668,7 @@ public static class MediaSessionService
 
             if (cmd == "like")
             {
-                bool? res = await SpotifyLike.ToggleLikeAsync();
-                CurrentIsLiked = res ?? !CurrentIsLiked;
+                await LikeState.ToggleAsync(LikeState.PlayerOf(targetFam, session?.SourceAppUserModelId ?? ""));
                 return null;
             }
 

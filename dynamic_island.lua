@@ -379,6 +379,10 @@ local DynamicIsland = {}
 local localization = qLocalization.new({
     en = {
         di_ui_spotify_no_port = "Spotify is running without the debug port, likes won't work. Restart it",
+        di_ui_yandex_no_port = "Yandex Music is running without the debug port, likes won't work. Restart it",
+        di_ui_restart_yandex = "Quit Yandex Music from the tray and open it from the taskbar or Start",
+        di_ui_yandex_music = "Yandex Music",
+        di_ui_removed_from_yandex = "Removed from Yandex Music",
         di_ui_likes_unavailable = "Likes unavailable",
         di_ui_restart_spotify = "Restart Spotify from the taskbar or Start",
         di_rampage_timer = "Rampage timer",
@@ -617,6 +621,7 @@ local localization = qLocalization.new({
         di_ui_roshan_pit_alert = "Roshan Pit",
         di_ui_roshan_under_attack = "Roshan Under Attack",
         di_ui_combat_audio_detected_in_pit = "Combat audio detected in pit",
+        di_ui_roshan_health = "Health: %d",
         di_ui_player = "Player",
         di_ui_buyback_alert = "Buyback",
         di_ui_bought_back = " Bought Back",
@@ -880,6 +885,8 @@ local localization = qLocalization.new({
         di_match_alert_tip = "Accept countdown in the menu.\nPriority, Focus and sound in the gear",
         di_courier_faceid = "Face ID on Delivery",
         di_courier_faceid_tip = "Face ID animation when the\ncourier brings your items",
+        di_courier_sound = "Delivery Sound",
+        di_courier_sound_tip = "Sound when the courier brings your items\nor dies on the way",
         di_match_faceid = "Face ID on Accept",
         di_match_faceid_tip = "Face ID animation when\nyou accept a match",
         di_runes_active_runes = "Active Power Runes",
@@ -904,6 +911,10 @@ local localization = qLocalization.new({
         di_runes_stacks_tip = "Reminder to stack camps\nbefore the minute mark",
         di_timings_toast_duration = "Alert Duration",
         di_timings_stack_time = "Stack Reminder Lead (pull at :53)",
+        di_timings_stack_until = "Remind Until Minute",
+        di_timings_stack_until_tip = "Stack reminders stop after this minute.\nWhole match means no limit",
+        di_stack_until_always = "Whole match",
+        di_stack_until_min = "%d min",
         di_timings_power_rune_time = "Power Runes Lead Time",
         di_timings_water_rune_time = "Water Runes Lead Time",
         di_timings_bounty_rune_time = "Bounty Runes Lead Time",
@@ -913,8 +924,8 @@ local localization = qLocalization.new({
         di_timings_tormentor2_time = "Tormentor 2nd Warning",
         di_media_enabled = "Media Sync",
         di_media_enabled_tip = "The music player in the island.\nNeeds MediaBridge",
-        di_media_spotify_like = "Spotify Like Button",
-        di_media_spotify_like_tip = "The heart likes the song in Spotify.\nNeeds MediaBridge",
+        di_media_spotify_like = "Track Like Button",
+        di_media_spotify_like_tip = "The heart likes the song in Spotify\nor Yandex Music. Needs MediaBridge",
         di_media_volume_wheel = "Scroll Wheel Volume Control",
         di_media_volume_wheel_tip = "Scroll over the island to change\nthe player's volume",
         di_media_lyrics = "Synced Lyrics",
@@ -931,7 +942,7 @@ local localization = qLocalization.new({
         di_media_secondary_bubble = "Satellite Bubble",
         di_media_secondary_bubble_tip = "Minor alerts drop into a side bubble\ninstead of covering the player",
         di_media_in_menu = "Show in Main Menu",
-        di_media_in_menu_tip = "Show what is playing in the main menu too,\nnot only in a match",
+        di_media_in_menu_tip = "Music takes the island in the main menu too.\nMatch search moves to the second bubble",
         di_media_shadow = "Soft Shadows",
         di_media_shadow_tip = "Soft shadow under the island\nand its bubbles",
         di_media_blur = "Backdrop Glass Blur",
@@ -1004,6 +1015,10 @@ local localization = qLocalization.new({
     },
     ru = {
         di_ui_spotify_no_port = "Спотифай запущен без порта, лайки не работают. Перезапусти его",
+        di_ui_yandex_no_port = "Яндекс Музыка запущена без порта, лайки не работают. Перезапусти её",
+        di_ui_restart_yandex = "Закрой Яндекс Музыку через трей и открой с панели задач или из Пуска",
+        di_ui_yandex_music = "Яндекс Музыка",
+        di_ui_removed_from_yandex = "Удалено из Яндекс Музыки",
         di_ui_likes_unavailable = "Лайки недоступны",
         di_ui_restart_spotify = "Перезапусти Спотифай с панели задач или из Пуска",
         di_rampage_timer = "Таймер рампаги",
@@ -1242,6 +1257,7 @@ local localization = qLocalization.new({
         di_ui_roshan_pit_alert = "Логово Рошана",
         di_ui_roshan_under_attack = "Рошан атакован",
         di_ui_combat_audio_detected_in_pit = "Звуки битвы в логове",
+        di_ui_roshan_health = "Здоровье: %d",
         di_ui_player = "Игрок",
         di_ui_buyback_alert = "Выкуп",
         di_ui_bought_back = " выкупился",
@@ -1505,6 +1521,8 @@ local localization = qLocalization.new({
         di_match_alert_tip = "Отсчёт принятия матча в меню.\nПриоритет, фокус и звук в шестерёнке",
         di_courier_faceid = "Face ID при доставке",
         di_courier_faceid_tip = "Анимация Face ID, когда курьер\nдоставил твои предметы",
+        di_courier_sound = "Звук доставки",
+        di_courier_sound_tip = "Звук, когда курьер доставил предметы\nили погиб по пути",
         di_match_faceid = "Face ID при принятии",
         di_match_faceid_tip = "Анимация Face ID, когда\nты принимаешь матч",
         di_runes_active_runes = "Активные руны (Power)",
@@ -1529,6 +1547,10 @@ local localization = qLocalization.new({
         di_runes_stacks_tip = "Напоминание застакать кемпы\nперед началом минуты",
         di_timings_toast_duration = "Длительность уведомлений",
         di_timings_stack_time = "Пре-таймер стака (агр на :53)",
+        di_timings_stack_until = "Напоминать до минуты",
+        di_timings_stack_until_tip = "После этой минуты напоминания о стаках\nпрекращаются. Весь матч значит без ограничения",
+        di_stack_until_always = "Весь матч",
+        di_stack_until_min = "%d мин",
         di_timings_power_rune_time = "Пре-таймер: Power руны",
         di_timings_water_rune_time = "Пре-таймер: Водные руны",
         di_timings_bounty_rune_time = "Пре-таймер: Bounty руны",
@@ -1538,8 +1560,8 @@ local localization = qLocalization.new({
         di_timings_tormentor2_time = "2-е опов. Терзателя",
         di_media_enabled = "Медиа плеер",
         di_media_enabled_tip = "Музыкальный плеер в островке.\nНужен MediaBridge",
-        di_media_spotify_like = "Лайк трека Spotify",
-        di_media_spotify_like_tip = "Сердечко ставит лайк треку в Spotify.\nНужен MediaBridge",
+        di_media_spotify_like = "Лайк трека",
+        di_media_spotify_like_tip = "Сердечко ставит лайк треку в Spotify\nили Яндекс Музыке. Нужен MediaBridge",
         di_media_volume_wheel = "Громкость колесиком мыши",
         di_media_volume_wheel_tip = "Колесико над островком меняет\nгромкость плеера",
         di_media_lyrics = "Текст песен",
@@ -1556,7 +1578,7 @@ local localization = qLocalization.new({
         di_media_secondary_bubble = "Второй островок/баббл",
         di_media_secondary_bubble_tip = "Мелкие оповещения уходят в кружок сбоку,\nа не закрывают плеер",
         di_media_in_menu = "Показывать в главном меню",
-        di_media_in_menu_tip = "Показывать, что играет, и в главном меню,\nа не только в матче",
+        di_media_in_menu_tip = "Музыка занимает островок и в главном меню.\nПоиск матча уходит во второй пузырь",
         di_media_shadow = "Мягкие тени",
         di_media_shadow_tip = "Мягкая тень под островком\nи кружками",
         di_media_blur = "Размытие фона (Blur)",
@@ -2039,7 +2061,11 @@ local CourierTracker = {
     LastItemCount = 0,
     CachedCourier = nil,
     BasePos = nil,
-    IsGoingToStash = false
+    IsGoingToStash = false,
+    ViaStash = false,
+    Carry = 0,
+    GraceUntil = 0,
+    Zone = {}
 }
 
 local VolumeState = {
@@ -2560,6 +2586,7 @@ local function SaveAllConfig()
             if Sheet.SeenVer then f:write("seen_ver=" .. Sheet.SeenVer .. "\n") end
             if Sheet.BridgeHintSeen then f:write("bridge_hint=1\n") end
             if Hello.SetupDone then f:write("setup_done=1\n") end
+            if CourierTracker.Zone.R then f:write(string.format("courier_zone=%d,%.3f\n", math.floor(CourierTracker.Zone.R), CourierTracker.Zone.Ratio or 1)) end
             if Impl.Ly.Open then f:write("lyrics_open=1\n") end
             if Hello.ChatPrev ~= nil then f:write("hello_chat=" .. (Hello.ChatPrev and "1" or "0") .. "\n") end
             if Hello.StampValue or Hello.SavedStamp then f:write("hello_stamp=" .. tostring(Hello.StampValue or Hello.SavedStamp) .. "\n") end
@@ -2624,6 +2651,7 @@ local function SaveAllConfig()
                 end
                 if UI.Timings then
                     if UI.Timings.ToastDuration then f:write("ui_t_dur=" .. tostring(UI.Timings.ToastDuration:Get()) .. "\n") end
+                    if UI.Timings.StackUntil then f:write("ui_t_stack_until=" .. tostring(UI.Timings.StackUntil:Get()) .. "\n") end
                     if UI.Timings.PowerRuneTime then f:write("ui_t_power=" .. tostring(UI.Timings.PowerRuneTime:Get()) .. "\n") end
                     if UI.Timings.WaterRuneTime then f:write("ui_t_water=" .. tostring(UI.Timings.WaterRuneTime:Get()) .. "\n") end
                     if UI.Timings.BountyRuneTime then f:write("ui_t_bounty=" .. tostring(UI.Timings.BountyRuneTime:Get()) .. "\n") end
@@ -2703,6 +2731,13 @@ function Impl.LoadAllConfig()
             Sheet.BridgeHintSeen = true
         elseif line == "setup_done=1" then
             Hello.SetupDone = true
+        elseif string.sub(line, 1, 13) == "courier_zone=" then
+            local zr, zk = string.match(line, "^courier_zone=(%d+),([%d%.]+)$")
+            zr, zk = tonumber(zr), tonumber(zk)
+            if zr and zk and zr >= 300 and zr <= 4500 and zk >= 1.1 and zk <= 3 then
+                CourierTracker.Zone.R = zr
+                CourierTracker.Zone.Ratio = zk
+            end
         elseif line == "lyrics_open=1" then
             Impl.Ly.Open = true
         elseif line == "hello_chat=1" or line == "hello_chat=0" then
@@ -2805,6 +2840,7 @@ function Impl.LoadAllConfig()
                     elseif k == "ui_c_lowhp" and UI.Combat and UI.Combat.LowHP then UI.Combat.LowHP:Set(v == "1")
                     elseif k == "ui_c_lvl" and UI.Combat and UI.Combat.LevelUp then UI.Combat.LevelUp:Set(v == "1")
                     elseif k == "ui_t_dur" and UI.Timings and UI.Timings.ToastDuration then UI.Timings.ToastDuration:Set(tonumber(v) or 4)
+                    elseif k == "ui_t_stack_until" and UI.Timings and UI.Timings.StackUntil then UI.Timings.StackUntil:Set(tonumber(v) or 0)
                     elseif k == "ui_t_power" and UI.Timings and UI.Timings.PowerRuneTime then UI.Timings.PowerRuneTime:Set(tonumber(v) or 20)
                     elseif k == "ui_t_water" and UI.Timings and UI.Timings.WaterRuneTime then UI.Timings.WaterRuneTime:Set(tonumber(v) or 20)
                     elseif k == "ui_t_bounty" and UI.Timings and UI.Timings.BountyRuneTime then UI.Timings.BountyRuneTime:Set(tonumber(v) or 10)
@@ -3185,7 +3221,7 @@ function Haptic.Trigger(hType, p1, p2)
             Haptic.State.GlowAlpha = 140 * intensity
             Haptic.State.GlowColor = Color(48, 209, 88, 255)
         end
-        HapticPlaySound("courier_delivered", 0.65)
+        if p1 ~= true then HapticPlaySound("courier_delivered", 0.65) end
         Haptic.Pattern.Active = true
         Haptic.Pattern.Type = Haptic.Types.SUCCESS_APPLE_PAY
         Haptic.Pattern.StartTime = nowClk
@@ -3606,6 +3642,8 @@ function Impl.InitMenu()
     C.CourierDelivery:ToolTip("di_combat_courier_delivery_tip")
     C.CourierFaceID = gLive:Switch("di_courier_faceid", true, "\u{f118}")
     C.CourierFaceID:ToolTip("di_courier_faceid_tip")
+    C.CourierSound = C.CourierDelivery:Gear("di_gear_alert"):Switch("di_courier_sound", true, "\u{f028}")
+    C.CourierSound:ToolTip("di_courier_sound_tip")
     C.PauseAlert = gLive:Switch("di_combat_pause_alert", true, "\u{f04c}")
     C.PauseAlert:ToolTip("di_combat_pause_alert_tip")
     C.MatchFound = gLive:Switch("di_match_alert", true, "\u{f11b}")
@@ -3666,6 +3704,12 @@ function Impl.InitMenu()
     R.Stacks:ToolTip("di_runes_stacks_tip")
     local gStack = R.Stacks:Gear("di_gear_alert")
     T.StackTime = lead(gStack, "di_timings_stack_time", 3, 20, 8)
+    T.StackUntil = gStack:Slider("di_timings_stack_until", 0, 60, 0, function(v)
+        if v == 0 then return L("di_stack_until_always") end
+        return string.format(L("di_stack_until_min"), v)
+    end)
+    T.StackUntil:Icon("\u{f2f2}")
+    T.StackUntil:ToolTip("di_timings_stack_until_tip")
     P.Stack = prio(gStack, "di_alert_priority", 2)
     D.Stack = dur(gStack)
     snd(gStack, "Stack")
@@ -3725,7 +3769,7 @@ function Impl.InitMenu()
     Md.LyricsCompact:ToolTip("di_media_lyrics_compact_tip")
     Md.SecondaryBubble = gMedia:Switch("di_media_secondary_bubble", true, "\u{f111}")
     Md.SecondaryBubble:ToolTip("di_media_secondary_bubble_tip")
-    Md.InMenu = gMedia:Switch("di_media_in_menu", false, "\u{f015}")
+    Md.InMenu = gMedia:Switch("di_media_in_menu", true, "\u{f015}")
     Md.InMenu:ToolTip("di_media_in_menu_tip")
     Md.Hints = gMedia:Switch("di_media_hints", true, "\u{f05a}")
     Md.Hints:ToolTip("di_media_hints_tip")
@@ -4538,7 +4582,9 @@ function Impl.SwapWithBubble()
     local kind = R.kind
     local seen = {}
     for _, it in ipairs(Impl.PlanList or {}) do seen[it.kind] = true end
-    if kind == "notif" and NotificationQueue.Active then
+    if kind == "search" or (kind == "media" and Impl.MenuSwap) then
+        Impl.MenuSwap = kind == "search" or nil
+    elseif kind == "notif" and NotificationQueue.Active then
         NotificationQueue.Active.Priority = 99
         NotificationQueue.StartTime = os.clock()
     elseif kind == "activity" and R.act then
@@ -4625,6 +4671,7 @@ function Impl.PollMediaBridge()
         MediaData.PollBusy = nil
         if not res or not res.response or res.response == "" then return end
         local body = res.response
+        if string.find(body, '"is_playing"', 1, true) then Impl.BridgeAlive() end
 
         local isPlaying = string.find(body, '"is_playing"%s*:%s*true') ~= nil
         local title = string.match(body, '"title"%s*:%s*"([^"]*)"') or ""
@@ -4780,23 +4827,45 @@ function Impl.PollMediaBridge()
     end, "media_poll")
 end
 
+function Impl.BridgeAlive()
+    BridgeStatus.LastOk = os.clock()
+    if BridgeStatus.Down then
+        BridgeStatus.Down = false
+        if Dbg.On then Dbg.Log("bridge", "online again") end
+    end
+end
+
+function Impl.BridgeFail(what, res)
+    if BridgeStatus.Down then return end
+    local clk = os.clock()
+    if BridgeStatus.LastOk > 0 and clk - BridgeStatus.LastOk < 10 then return end
+    BridgeStatus.Down = true
+    if Dbg.On then
+        Dbg.Log("bridge", string.format("no answer on %s: code %s, error %s %s, body %d bytes", what, tostring(res and res.code), tostring(res and res.error_code), tostring(res and res.error_message), #(res and res.response or "")), true)
+    end
+end
+
 function Impl.PollBridgeStatus()
     local clk = os.clock()
-    if clk - BridgeStatus.LastPoll < 3.0 then return end
+    local online = BridgeStatus.LastOk > 0 and clk - BridgeStatus.LastOk < 10
+    if clk - BridgeStatus.LastPoll < (online and 3.0 or 1.0) then return end
     if BridgeStatus.Busy and clk - BridgeStatus.Busy < 4.0 then return end
     BridgeStatus.LastPoll = clk
     BridgeStatus.Busy = clk
     if BridgeStatus.FirstPoll == 0 then BridgeStatus.FirstPoll = clk end
     pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/status", {}, function(res)
         BridgeStatus.Busy = nil
-        if not res or not res.response or res.response == "" then return end
-        local body = res.response
-        if not string.find(body, '"status"', 1, true) then return end
-        BridgeStatus.LastOk = os.clock()
+        local body = res and res.response or ""
+        if not string.find(body, '"status"', 1, true) then
+            Impl.BridgeFail("/status", res)
+            return
+        end
+        Impl.BridgeAlive()
         BridgeStatus.Version = string.match(body, '"version"%s*:%s*"([^"]*)"') or ""
         BridgeStatus.Latest = string.match(body, '"latest_version"%s*:%s*"([^"]*)"') or ""
         BridgeStatus.MediaSessions = string.match(body, '"media_sessions"%s*:%s*"([^"]*)"') or ""
         BridgeStatus.SpotifyDebug = string.match(body, '"spotify_debug"%s*:%s*"([^"]*)"') or ""
+        BridgeStatus.YandexDebug = string.match(body, '"yandex_debug"%s*:%s*"([^"]*)"') or ""
         local fontsOk = string.match(body, '"fonts_ok"%s*:%s*(%a+)')
         if fontsOk then BridgeStatus.FontsOk = fontsOk == "true" end
     end, "bridge_status")
@@ -4830,6 +4899,7 @@ function Impl.PollSystem()
         local body = res.response
         local id = string.match(body, '"device_id"%s*:%s*"([^"]*)"')
         if not id then return end
+        Impl.BridgeAlive()
         local cur = {
             id = id,
             name = string.match(body, '"device"%s*:%s*"(.-)"%s*,%s*"device_id"') or "",
@@ -4891,6 +4961,9 @@ function Impl.CollectStatusHints()
     end
     if online and BridgeStatus.SpotifyDebug == "closed" and UI and UI.Media and UI.Media.SpotifyLike:Get() then
         table.insert(out, { text = L("di_ui_spotify_no_port"), dot = Color(255, 159, 10, 255) })
+    end
+    if online and BridgeStatus.YandexDebug == "closed" and UI and UI.Media and UI.Media.SpotifyLike:Get() then
+        table.insert(out, { text = L("di_ui_yandex_no_port"), dot = Color(255, 159, 10, 255) })
     end
 
     if next(Fuse.Off) then
@@ -5286,6 +5359,8 @@ function Impl.ProcessGameEvents()
                     end
                 end
 
+                local killerRaw = NPC.GetUnitName(localHero) or ""
+
                 DynamicIsland.PushNotification({
                     Type = "kill",
                     Tag = L("di_ui_kill_streak"),
@@ -5293,11 +5368,15 @@ function Impl.ProcessGameEvents()
                     Subtitle = L("di_ui_eliminated") .. killedHeroName,
                     AccentColor = Config.Colors.Red,
                     IconType = "hero",
-                    Icon = killedRaw ~= "" and ("panorama/images/heroes/icons/" .. killedRaw .. "_png.vtex_c") or nil,
+                    Icon = killerRaw ~= "" and ("panorama/images/heroes/icons/" .. killerRaw .. "_png.vtex_c") or nil,
                     Duration = 3.8
                 })
             end
         end
+    end
+
+    if UI.Runes.Roshan:Get() then
+        Impl.WatchRoshanHealth(now)
     end
 
     local allHeroesList = Heroes.GetAll()
@@ -5391,12 +5470,13 @@ function Impl.ProcessGameEvents()
         local tLead1 = UI.Timings.Tormentor1Time:Get()
         local tLead2 = UI.Timings.Tormentor2Time:Get()
         local stackLead = UI.Timings.StackTime:Get()
+        local stackUntil = UI.Timings.StackUntil:Get()
 
         if tf > 0 then
             local nm = math.floor(tf / 60) + 1
             local sl = nm * 60 - tf
 
-            if UI.Runes.Stacks:Get() and nm >= 2 and sl == 7 + stackLead and not FightTracker.Active then
+            if UI.Runes.Stacks:Get() and nm >= 2 and (stackUntil == 0 or nm <= stackUntil) and sl == 7 + stackLead and not FightTracker.Active then
                 local sKey = "stack_" .. nm
                 if not GameTracker.Runes.WarnedMilestones[sKey] then
                     GameTracker.Runes.WarnedMilestones[sKey] = true
@@ -5784,29 +5864,117 @@ function DynamicIsland.OnModifierCreate(ent, mod)
     end
 
     if isHero and UI.Runes.Roshan:Get() and mn == "modifier_item_aegis" and not (NPC.IsIllusion and NPC.IsIllusion(ent)) then
-        GameTracker.Roshan.AegisExpiryTime = GameRules.GetGameTime() + 300
-        GameTracker.Roshan.AegisHolder = ent
-        GameTracker.Roshan.Dismissed = false
-        local heroName = GetPlayerDisplayName(ent)
-        local accent = isEnemy and Config.Colors.Red or Config.Colors.Accent
-        DynamicIsland.PushNotification({
-            Type = "aegis",
-            Tag = L("di_ui_aegis_claimed"),
-            Title = heroName .. L("di_ui_claimed_aegis"),
-            Subtitle = isEnemy and L("di_ui_enemy_secured_immortal") or L("di_ui_ally_secured_immortal"),
-            AccentColor = accent,
-            IconType = "item",
-            Icon = "panorama/images/items/aegis_png.vtex_c",
-            Duration = 4.5
-        })
+        Impl.AegisClaimed(ent, isEnemy, "modifier")
         return
     end
+end
+
+function Impl.AegisClaimed(ent, isEnemy, source)
+    local ros = GameTracker.Roshan
+    local now = GameRules.GetGameTime()
+    local known = ros.AegisClaimedAt ~= nil and now - ros.AegisClaimedAt < 300 and (ros.AegisClaimedBy == ent or ros.AegisClaimedBy == nil or ent == nil)
+    if Dbg.On then
+        Dbg.Log("roshan", string.format("aegis claimed via %s, holder %s, enemy %s, already known %s", source, ent and tostring(NPC.GetUnitName(ent)) or "unknown", tostring(isEnemy), tostring(known)))
+    end
+    if known then
+        if ent then
+            ros.AegisClaimedBy = ent
+            ros.AegisHolder = ent
+            if source == "modifier" and ros.AegisExpiryTime == 0 then
+                ros.AegisExpiryTime = ros.AegisClaimedAt + 300
+            end
+        end
+        return
+    end
+    ros.AegisClaimedAt = now
+    ros.AegisClaimedBy = ent
+    ros.AegisExpiryTime = now + 300
+    ros.AegisHolder = ent
+    ros.Dismissed = false
+    local heroName = ent and CleanHeroName(NPC.GetUnitName(ent)) or L("di_ui_enemy_hero")
+    DynamicIsland.PushNotification({
+        Type = "aegis",
+        Tag = L("di_ui_aegis_claimed"),
+        Title = heroName .. L("di_ui_claimed_aegis"),
+        Subtitle = isEnemy and L("di_ui_enemy_secured_immortal") or L("di_ui_ally_secured_immortal"),
+        AccentColor = isEnemy and Config.Colors.Red or Config.Colors.Accent,
+        IconType = "item",
+        Icon = "panorama/images/items/aegis_png.vtex_c",
+        Duration = 4.5
+    })
+end
+
+function Impl.RoshanAttacked(now, subtitle, source)
+    local ros = GameTracker.Roshan
+    local fresh = now - ros.LastAttackAlert > 15.0
+    ros.LastAttackAlert = now
+    if not fresh then return end
+    if Dbg.On then Dbg.Log("roshan", "under attack via " .. source .. ", " .. subtitle) end
+    DynamicIsland.PushNotification({
+        Type = "roshan_attack",
+        Tag = L("di_ui_roshan_pit_alert"),
+        Title = L("di_ui_roshan_under_attack"),
+        Subtitle = subtitle,
+        AccentColor = Config.Colors.Red,
+        IconType = "item",
+        Icon = "panorama/images/items/aegis_png.vtex_c",
+        Duration = 4.5
+    })
+end
+
+function Impl.WatchRoshanHealth(now)
+    local ros = GameTracker.Roshan
+    if ros.HpAt and now >= ros.HpAt and now - ros.HpAt < 1.0 then return end
+    ros.HpAt = now
+    local ok, hp = pcall(Entity.GetRoshanHealth)
+    if not ok or type(hp) ~= "number" then
+        if Dbg.On and not ros.HpLogged then
+            ros.HpLogged = true
+            Dbg.Log("roshan", "health is not readable: " .. tostring(hp))
+        end
+        return
+    end
+    local prev = ros.LastHP
+    ros.LastHP = hp
+    if Dbg.On and not ros.HpLogged then
+        ros.HpLogged = true
+        Dbg.Log("roshan", "health readable, now " .. tostring(hp))
+    end
+    if prev and prev > 0 and hp > 0 and hp < prev then
+        Impl.RoshanAttacked(now, string.format(L("di_ui_roshan_health"), hp), "health " .. prev .. " -> " .. hp)
+    end
+end
+
+function DynamicIsland.OnChatEvent(data)
+    if not UI or not UI.Main.Enabled:Get() or not UI.Runes.Roshan:Get() or not data then return end
+    local T = Enum.DotaChatMessage
+    if data.type ~= T.CHAT_MESSAGE_AEGIS and data.type ~= T.CHAT_MESSAGE_AEGIS_STOLEN then return end
+    local my = HeroData.Local or Heroes.GetLocal()
+    if not my then return end
+    local hero = nil
+    for _, pl in ipairs(Players.GetAll()) do
+        local okId, pid = pcall(Player.GetPlayerID, pl)
+        if okId and pid == data.playerid_1 then
+            hero = Player.GetAssignedHero(pl)
+            break
+        end
+    end
+    if Dbg.On then
+        Dbg.Log("roshan", string.format("chat event %s, player %s, hero %s", tostring(data.type), tostring(data.playerid_1), hero and tostring(NPC.GetUnitName(hero)) or "not found"))
+    end
+    local isEnemy = true
+    if hero then isEnemy = not Entity.IsSameTeam(my, hero) end
+    Impl.AegisClaimed(hero, isEnemy, "chat")
 end
 
 function DynamicIsland.OnModifierDestroy(ent, mod)
     if GameTracker.Roshan.AegisExpiryTime == 0 or not mod or ent ~= GameTracker.Roshan.AegisHolder then return end
     local ok, mn = pcall(Modifier.GetName, mod)
     if ok and mn == "modifier_item_aegis" then
+        if Entity.IsDormant(ent) then
+            if Dbg.On then Dbg.Log("roshan", "aegis modifier dropped while the holder is in fog, timer kept") end
+            return
+        end
         GameTracker.Roshan.AegisExpiryTime = 0
         GameTracker.Roshan.AegisHolder = nil
     end
@@ -5816,20 +5984,7 @@ function DynamicIsland.OnStartSound(data)
     if not UI or not UI.Main.Enabled:Get() or not UI.Runes.Roshan:Get() or not data or not data.name then return end
     local snd = string.lower(data.name)
     if string.find(snd, "roshan") or string.find(snd, "rosh") then
-        local now = GameRules.GetGameTime()
-        if now - GameTracker.Roshan.LastAttackAlert > 15.0 then
-            GameTracker.Roshan.LastAttackAlert = now
-            DynamicIsland.PushNotification({
-                Type = "roshan_attack",
-                Tag = L("di_ui_roshan_pit_alert"),
-                Title = L("di_ui_roshan_under_attack"),
-                Subtitle = L("di_ui_combat_audio_detected_in_pit"),
-                AccentColor = Config.Colors.Red,
-                IconType = "item",
-                Icon = "panorama/images/items/aegis_png.vtex_c",
-                Duration = 4.5
-            })
-        end
+        Impl.RoshanAttacked(GameRules.GetGameTime(), L("di_ui_combat_audio_detected_in_pit"), "sound " .. snd)
     end
 end
 
@@ -6219,7 +6374,8 @@ end
 function Impl.GetLocalCourier()
     if Couriers and Couriers.GetLocal then
         local ok, c = pcall(Couriers.GetLocal)
-        if ok and c and Entity.IsAlive(c) then
+        if ok and c then
+            if not Entity.IsAlive(c) then return nil, true end
             CourierTracker.CachedCourier = c
             return c
         end
@@ -6235,12 +6391,11 @@ function Impl.GetLocalCourier()
         local ok, list = pcall(Couriers.GetAll)
         if ok and list then
             for _, c in ipairs(list) do
-                if c and Entity.IsAlive(c) then
-                    local pid = (Courier and Courier.GetPlayerID) and Courier.GetPlayerID(c) or nil
-                    if myPlayerID and pid and pid == myPlayerID then
-                        CourierTracker.CachedCourier = c
-                        return c
-                    end
+                local pid = c and Courier and Courier.GetPlayerID and Courier.GetPlayerID(c) or nil
+                if myPlayerID and pid and pid == myPlayerID then
+                    if not Entity.IsAlive(c) then return nil, true end
+                    CourierTracker.CachedCourier = c
+                    return c
                 end
             end
             for _, c in ipairs(list) do
@@ -6265,6 +6420,152 @@ function Impl.GetLocalCourier()
     return nil
 end
 
+function Impl.CourierQuiet()
+    return not ToggleOn(UI and UI.Combat and UI.Combat.CourierSound)
+end
+
+function Impl.CourierIsMe(ent, hero)
+    if not ent or not hero then return false end
+    if ent == hero then return true end
+    local a, b = Entity.GetIndex(ent), Entity.GetIndex(hero)
+    return a ~= nil and a == b
+end
+
+function Impl.CourierHasItems(npc, first, last)
+    for i = first, last do
+        local it = NPC.GetItemByIndex(npc, i)
+        if it then
+            local n = Ability.GetName(it)
+            if n and n ~= "" then return true end
+        end
+    end
+    return false
+end
+
+function Impl.CourierDebug(c, what)
+    if not Dbg.On then return end
+    local mods = {}
+    for _, m in ipairs(NPC.GetModifiers(c) or {}) do
+        local ok, name = pcall(Modifier.GetName, m)
+        mods[#mods + 1] = ok and tostring(name) or "?"
+    end
+    Dbg.Log("courier", string.format("%s | state %s, speed %.0f, base speed %s, zone r %s in %s out %s, modifiers: %s", what, tostring(Courier.GetCourierState(c)), NPC.GetMoveSpeed(c) or 0, tostring(NPC.GetBaseSpeed(c)), tostring(CourierTracker.Zone.R), tostring(CourierTracker.Zone.In), tostring(CourierTracker.Zone.Out), table.concat(mods, ", ")))
+end
+
+function Impl.CourierBegin(nowClk, viaStash, source)
+    local T = CourierTracker
+    T.DeliveryOrderedTime = nowClk
+    T.Delivering = true
+    T.Delivered = false
+    T.Progress = 0.0
+    T.ETA = 0
+    T.StartDistance = 0
+    T.ViaStash = viaStash
+    T.IsGoingToStash = viaStash
+    T.Carry = 0
+    T.OffSince = nil
+    T.NearSince = nil
+    T.Block = false
+    T.GraceUntil = nowClk + (source == "state" and 0 or 3.0)
+    if Dbg.On then Dbg.Log("courier", "delivery started by " .. source .. (viaStash and ", through the stash" or "")) end
+    if StateMachine.TargetState ~= StateMachine.States.COURIER_DELIVERY and StateMachine.TargetState ~= StateMachine.States.COURIER_LARGE then
+        TriggerStateTransition(StateMachine.States.COURIER_DELIVERY)
+    end
+end
+
+function Impl.CourierStop(reason)
+    local T = CourierTracker
+    if not T.Delivering then return end
+    if Dbg.On then Dbg.Log("courier", "delivery dropped: " .. reason) end
+    T.Delivering = false
+    T.Delivered = false
+    T.DeliveryOrderedTime = 0
+    T.StartDistance = 0
+    T.Progress = 0.0
+    T.IsGoingToStash = false
+    T.ViaStash = false
+    T.Carry = 0
+    T.OffSince = nil
+    T.NearSince = nil
+    T.Block = true
+end
+
+function Impl.CourierSegIn(a, b, center, r)
+    local dx, dy = b.x - a.x, b.y - a.y
+    local len = math.sqrt(dx * dx + dy * dy)
+    if len < 1 or r <= 0 then return 0, len end
+    local ux, uy = dx / len, dy / len
+    local mx, my = a.x - center.x, a.y - center.y
+    local bq = mx * ux + my * uy
+    local disc = bq * bq - (mx * mx + my * my - r * r)
+    if disc <= 0 then return 0, len end
+    local sq = math.sqrt(disc)
+    local t1 = math.max(0, math.min(len, -bq - sq))
+    local t2 = math.max(0, math.min(len, -bq + sq))
+    return t2 - t1, len
+end
+
+function Impl.CourierTravel(cO, hO, basePos, viaBase, speed, distBase)
+    if not cO or not hO or not basePos then return 0, 0 end
+    local Z = CourierTracker.Zone
+    local r = Z.R or 0
+    local inLen, total
+    if viaBase then
+        local i1, l1 = Impl.CourierSegIn(cO, basePos, basePos, r)
+        local i2, l2 = Impl.CourierSegIn(basePos, hO, basePos, r)
+        inLen, total = i1 + i2, l1 + l2
+    else
+        inLen, total = Impl.CourierSegIn(cO, hO, basePos, r)
+    end
+    if not Z.R then return total / math.max(100, speed), total end
+    local k = Z.Ratio or 1
+    local inSpeed, outSpeed
+    if distBase < r then
+        inSpeed = speed
+        outSpeed = math.min(speed, Z.Out or speed / k)
+    else
+        outSpeed = speed
+        inSpeed = math.max(speed, Z.In or speed * k)
+    end
+    return inLen / math.max(100, inSpeed) + (total - inLen) / math.max(100, outSpeed), total
+end
+
+function Impl.CourierLearnZone(c, distBase, speed, onRoute)
+    local Z = CourierTracker.Zone
+    local now = GameRules.GetGameTime()
+    local pS, pD, pAt = Z.PrevSpeed, Z.PrevDist, Z.PrevAt
+    Z.PrevSpeed, Z.PrevDist, Z.PrevAt = speed, distBase, now
+    local burst = NPC.GetAbility(c, "courier_burst")
+    local since = burst and Ability.SecondsSinceLastUse(burst) or -1
+    if since >= 0 and since < 7 then
+        Z.PrevAt = nil
+        return
+    end
+    if pAt and now > pAt and now - pAt <= 0.5 and pS > 0 then
+        local ratio = pS / speed
+        local r = (distBase + pD) / 2
+        local k
+        if distBase > pD + 1 and ratio > 1.12 and ratio < 3 then
+            k = ratio
+        elseif distBase < pD - 1 and ratio < 1 / 1.12 and ratio > 1 / 3 then
+            k = 1 / ratio
+        end
+        if k and r >= 300 and r <= 4500 then
+            Z.R = Z.R and (Z.R + r) / 2 or r
+            Z.Ratio = k
+            Z.In, Z.Out = math.max(pS, speed), math.min(pS, speed)
+            Impl.CourierDebug(c, string.format("base speed zone measured: edge at %.0f, speed %.0f inside and %.0f outside", r, Z.In, Z.Out))
+            return
+        end
+    end
+    if not Z.R or not NPC.IsRunning(c) then return end
+    if distBase < Z.R - 100 then
+        Z.In = speed
+    elseif distBase > Z.R + 100 and onRoute then
+        Z.Out = speed
+    end
+end
+
 function Impl.ProcessPauseTracker()
     local paused = GameRules.IsPaused and GameRules.IsPaused() or false
     if paused then
@@ -6280,6 +6581,17 @@ function Impl.ProcessPauseTracker()
     end
 end
 
+Impl.CourierAbort = {
+    courier_return_to_base = true,
+    courier_go_to_secretshop = true,
+    courier_go_to_enemy_secretshop = true,
+    courier_go_to_sideshop = true,
+    courier_go_to_sideshop2 = true,
+    courier_take_stash_items = true,
+    courier_return_stash_items = true,
+    courier_transfer_items_to_other_player = true
+}
+
 function DynamicIsland.OnPrepareUnitOrders(data)
     if HUDCustomizer.IsOpen and Menu.Opened and Menu.Opened() then
         return false
@@ -6287,63 +6599,18 @@ function DynamicIsland.OnPrepareUnitOrders(data)
     if data then
         if data.ability then
             local abName = Ability.GetName(data.ability)
-            if abName and (abName == "courier_take_stash_and_transfer_items" or abName == "courier_transfer_items" or abName == "courier_take_stash_items") then
-                local nowClk = os.clock()
-                CourierTracker.DeliveryOrderedTime = nowClk
-                CourierTracker.Delivering = true
-                CourierTracker.Delivered = false
-                CourierTracker.Progress = 0.0
+            if abName == "courier_take_stash_and_transfer_items" or abName == "courier_transfer_items" then
                 local c = Impl.GetLocalCourier()
                 local myHero = HeroData.Local or (Heroes and Heroes.GetLocal and Heroes.GetLocal())
-                local dist = 1000
                 if c and myHero then
-                    local cO = Entity.GetAbsOrigin(c)
-                    local hO = Entity.GetAbsOrigin(myHero)
-                    local basePos = Impl.GetFountainPosition(myHero, c)
-                    local cState = Courier.GetCourierState and Courier.GetCourierState(c) or 0
-                    local isAtBase = (cState == Enum.CourierState.COURIER_STATE_AT_BASE or cState == 1)
-                    local hasStash = false
-                    for i = 9, 14 do
-                        local it = NPC.GetItemByIndex(myHero, i)
-                        if it then
-                            local n = Ability.GetName(it)
-                            if n and n ~= "" then hasStash = true break end
-                        end
-                    end
-                    local hasCourierItems = false
-                    for i = 0, 8 do
-                        local it = NPC.GetItemByIndex(c, i)
-                        if it then
-                            local n = Ability.GetName(it)
-                            if n and n ~= "" then hasCourierItems = true break end
-                        end
-                    end
-                    local needsStash = hasStash or (not hasCourierItems)
-                    if cO and hO then
-                        if not isAtBase and basePos and needsStash and (abName ~= "courier_transfer_items") then
-                            local dBase = (cO - basePos):Length()
-                            local dHero = (basePos - hO):Length()
-                            dist = dBase + dHero
-                            CourierTracker.IsGoingToStash = true
-                        else
-                            dist = (cO - hO):Length()
-                            CourierTracker.IsGoingToStash = false
-                        end
+                    local viaStash = abName ~= "courier_transfer_items" and Impl.CourierHasItems(myHero, 9, 14)
+                    if viaStash or Impl.CourierHasItems(c, 0, 8) then
+                        local atBase = Courier.GetCourierState(c) == Enum.CourierState.COURIER_STATE_AT_BASE
+                        Impl.CourierBegin(os.clock(), viaStash and not atBase, "order " .. abName)
                     end
                 end
-                CourierTracker.StartDistance = math.max(dist, 500)
-                if StateMachine.TargetState ~= StateMachine.States.COURIER_DELIVERY and StateMachine.TargetState ~= StateMachine.States.COURIER_LARGE then
-                    TriggerStateTransition(StateMachine.States.COURIER_DELIVERY)
-                end
-            elseif abName and (abName == "courier_return_to_base" or abName == "courier_go_to_secretshop") then
-                if CourierTracker.Delivering then
-                    CourierTracker.Delivering = false
-                    CourierTracker.Delivered = false
-                    CourierTracker.DeliveryOrderedTime = 0
-                    CourierTracker.StartDistance = 0
-                    CourierTracker.Progress = 0.0
-                    CourierTracker.IsGoingToStash = false
-                end
+            elseif abName and Impl.CourierAbort[abName] then
+                Impl.CourierStop("order " .. abName)
             end
         end
         if data.npc and Entity.IsAlive(data.npc) and Courier and Courier.IsFlyingCourier then
@@ -6355,29 +6622,14 @@ function DynamicIsland.OnPrepareUnitOrders(data)
             end
             if isCourierUnit then
                 local myHero = HeroData.Local or (Heroes and Heroes.GetLocal and Heroes.GetLocal())
-                if data.target and myHero and data.target == myHero and data.order == Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_TARGET then
-                    local nowClk = os.clock()
-                    CourierTracker.DeliveryOrderedTime = nowClk
-                    CourierTracker.Delivering = true
-                    CourierTracker.Delivered = false
-                    CourierTracker.Progress = 0.0
-                    CourierTracker.IsGoingToStash = false
-                    local cO = Entity.GetAbsOrigin(data.npc)
-                    local hO = Entity.GetAbsOrigin(myHero)
-                    local dist = (cO and hO) and (cO - hO):Length() or 1000
-                    CourierTracker.StartDistance = math.max(dist, 500)
-                    if StateMachine.TargetState ~= StateMachine.States.COURIER_DELIVERY and StateMachine.TargetState ~= StateMachine.States.COURIER_LARGE then
-                        TriggerStateTransition(StateMachine.States.COURIER_DELIVERY)
-                    end
-                elseif data.order == Enum.UnitOrder.DOTA_UNIT_ORDER_STOP or data.order == Enum.UnitOrder.DOTA_UNIT_ORDER_HOLD_POSITION then
-                    if CourierTracker.Delivering then
-                        CourierTracker.Delivering = false
-                        CourierTracker.Delivered = false
-                        CourierTracker.DeliveryOrderedTime = 0
-                        CourierTracker.StartDistance = 0
-                        CourierTracker.Progress = 0.0
-                        CourierTracker.IsGoingToStash = false
-                    end
+                local O = Enum.UnitOrder
+                if data.target and myHero and data.target == myHero and data.order == O.DOTA_UNIT_ORDER_MOVE_TO_TARGET then
+                    Impl.CourierBegin(os.clock(), false, "order to follow the hero")
+                elseif data.order == O.DOTA_UNIT_ORDER_STOP or data.order == O.DOTA_UNIT_ORDER_HOLD_POSITION
+                    or data.order == O.DOTA_UNIT_ORDER_MOVE_TO_POSITION or data.order == O.DOTA_UNIT_ORDER_MOVE_TO_DIRECTION
+                    or data.order == O.DOTA_UNIT_ORDER_MOVE_TO_TARGET or data.order == O.DOTA_UNIT_ORDER_ATTACK_MOVE
+                    or data.order == O.DOTA_UNIT_ORDER_PATROL then
+                    Impl.CourierStop("manual order " .. tostring(data.order))
                 end
             end
         end
@@ -6396,65 +6648,48 @@ function DynamicIsland.OnPrepareUnitOrders(data)
 end
 
 function Impl.ProcessCourierTracker()
-    local isEnabled = true
-    if UI and UI.Combat and UI.Combat.CourierDelivery then
-        isEnabled = UI.Combat.CourierDelivery:Get()
-    end
-    if not isEnabled then
-        CourierTracker.Delivering = false
-        CourierTracker.Delivered = false
-        CourierTracker.IsGoingToStash = false
+    local T = CourierTracker
+    if not ToggleOn(UI and UI.Combat and UI.Combat.CourierDelivery) then
+        T.Delivering = false
+        T.Delivered = false
+        T.IsGoingToStash = false
+        T.ViaStash = false
         return
     end
 
     local nowClk = os.clock()
 
-    if CourierTracker.Delivered then
-        if (nowClk - CourierTracker.DeliveredStartTime) > CourierTracker.DeliveredDuration then
-            CourierTracker.Delivered = false
-            CourierTracker.IsGoingToStash = false
-        end
+    if T.Delivered and (nowClk - T.DeliveredStartTime) > T.DeliveredDuration then
+        T.Delivered = false
+        T.IsGoingToStash = false
     end
 
-    local c = Impl.GetLocalCourier()
+    local c, dead = Impl.GetLocalCourier()
     if not c or not Entity.IsAlive(c) then
+        if dead and T.Delivering then
+            if not Impl.CourierQuiet() then HapticPlaySound("courier_death_or_fail", 0.6) end
+            Impl.CourierStop("courier died")
+        end
         return
     end
 
-    local cState = Courier.GetCourierState and Courier.GetCourierState(c) or 0
-    local cTarget = Courier.GetCourierStateEntity and Courier.GetCourierStateEntity(c) or nil
+    local CS = Enum.CourierState
+    local cState = Courier.GetCourierState(c) or 0
+    local cTarget = Courier.GetCourierStateEntity(c)
     local myHero = HeroData.Local or (Heroes and Heroes.GetLocal and Heroes.GetLocal())
-
-    if cState == Enum.CourierState.COURIER_STATE_AT_BASE or cState == 1 then
-        local cO = Entity.GetAbsOrigin(c)
-        if cO then
-            CourierTracker.BasePos = cO
-        end
-    end
-
-    local isTargetMe = false
-    if myHero then
-        if not cTarget then
-            isTargetMe = true
-        else
-            if cTarget == myHero then
-                isTargetMe = true
-            elseif Entity and Entity.GetIndex then
-                local tIdx = Entity.GetIndex(cTarget)
-                local mIdx = Entity.GetIndex(myHero)
-                if tIdx and mIdx and tIdx == mIdx then
-                    isTargetMe = true
-                end
-            end
-        end
-    end
+    local isDeliveringState = cState == CS.COURIER_STATE_DELIVERING_ITEMS
+    local isMovingState = cState == CS.COURIER_STATE_MOVING
+    local isReturningState = cState == CS.COURIER_STATE_RETURNING_TO_BASE
+    local isAtBaseState = cState == CS.COURIER_STATE_AT_BASE
 
     local cOrigin = Entity.GetAbsOrigin(c)
+    if isAtBaseState and cOrigin then
+        T.BasePos = cOrigin
+    end
     local hOrigin = myHero and Entity.GetAbsOrigin(myHero)
     local basePos = Impl.GetFountainPosition(myHero, c)
-    local distHero = (cOrigin and hOrigin) and (cOrigin - hOrigin):Length() or 0
-    local distBase = (cOrigin and basePos) and (cOrigin - basePos):Length() or 0
-    local distBaseToHero = (basePos and hOrigin) and (basePos - hOrigin):Length() or 0
+    local distHero = (cOrigin and hOrigin) and (cOrigin - hOrigin):Length2D() or 0
+    local distBase = (cOrigin and basePos) and (cOrigin - basePos):Length2D() or 0
     local speed = NPC.GetMoveSpeed(c) or 380
     if speed <= 0 then speed = 380 end
 
@@ -6493,109 +6728,105 @@ function Impl.ProcessCourierTracker()
     end
 
     if itemCount > 0 then
-        CourierTracker.Inventory = items
+        T.Inventory = items
     elseif hasStashItems and #stashItems > 0 then
-        CourierTracker.Inventory = stashItems
+        T.Inventory = stashItems
     else
-        CourierTracker.Inventory = items
+        T.Inventory = items
     end
 
-    CourierTracker.Hp = Entity.GetHealth(c) or 0
-    CourierTracker.MaxHp = Entity.GetMaxHealth(c) or 1
-    CourierTracker.HpPercent = math.max(0, math.min(1.0, CourierTracker.Hp / math.max(1, CourierTracker.MaxHp)))
-    CourierTracker.Speed = speed
-    CourierTracker.CurrentDistance = distHero
+    T.Hp = Entity.GetHealth(c) or 0
+    T.MaxHp = Entity.GetMaxHealth(c) or 1
+    T.HpPercent = math.max(0, math.min(1.0, T.Hp / math.max(1, T.MaxHp)))
+    T.Speed = speed
+    T.CurrentDistance = distHero
 
-    local isDead = (cState == Enum.CourierState.COURIER_STATE_DEAD or cState == 5)
-    local isDeliveringState = (cState == Enum.CourierState.COURIER_STATE_DELIVERING_ITEMS or cState == 3)
-    local isMovingState = (cState == Enum.CourierState.COURIER_STATE_MOVING or cState == 2)
-    local isReturningState = (cState == Enum.CourierState.COURIER_STATE_RETURNING_TO_BASE or cState == 4)
-    local isAtBaseState = (cState == Enum.CourierState.COURIER_STATE_AT_BASE or cState == 1)
+    local targetMe = Impl.CourierIsMe(cTarget, myHero)
+    local onRoute = (isDeliveringState and (cTarget == nil or targetMe)) or (isMovingState and targetMe)
+    if not onRoute then T.Block = false end
 
-    if not CourierTracker.Delivering and not CourierTracker.Delivered and not isDead then
-        if isDeliveringState or (isMovingState and isTargetMe and distHero > 450) then
-            CourierTracker.Delivering = true
-            CourierTracker.DeliveryOrderedTime = nowClk
-            CourierTracker.IsGoingToStash = false
-            CourierTracker.StartDistance = math.max(distHero, 500)
-            CourierTracker.Progress = 0.0
-            if StateMachine.TargetState ~= StateMachine.States.COURIER_DELIVERY and StateMachine.TargetState ~= StateMachine.States.COURIER_LARGE then
-                TriggerStateTransition(StateMachine.States.COURIER_DELIVERY)
-            end
-        end
+    if Dbg.On and T.DbgState ~= cState then
+        T.DbgState = cState
+        Impl.CourierDebug(c, string.format("state changed, target %s, %.0f from the hero, %.0f from the base, %d items", cTarget and (targetMe and "me" or "someone else") or "none", distHero, distBase, itemCount))
     end
 
-    if CourierTracker.Delivering then
-        if isDeliveringState or (isMovingState and isTargetMe and not isReturningState and distHero > 450) then
-            CourierTracker.IsGoingToStash = false
-        elseif isReturningState and (hasStashItems or itemCount == 0) then
-            CourierTracker.IsGoingToStash = true
-        end
+    Impl.CourierLearnZone(c, distBase, speed, onRoute)
 
-        local remainingDist = distHero
-        if CourierTracker.IsGoingToStash then
-            remainingDist = distBase + distBaseToHero
-        else
-            remainingDist = distHero
-        end
+    if not T.Delivering and not T.Delivered and not T.Block and onRoute and distHero > 450 and myHero and Entity.IsAlive(myHero) then
+        Impl.CourierBegin(nowClk, hasStashItems and itemCount == 0 and not isAtBaseState, "state")
+    end
 
-        if remainingDist > CourierTracker.StartDistance then
-            CourierTracker.StartDistance = remainingDist
-        end
+    if not T.Delivering then return end
+    if not cOrigin or not hOrigin then
+        Impl.CourierStop("no hero")
+        return
+    end
 
-        local prog = 1.0 - (remainingDist / math.max(1, CourierTracker.StartDistance))
-        local clampedProg = math.max(0.0, math.min(1.0, prog))
-        CourierTracker.Progress = math.max(CourierTracker.Progress, clampedProg)
-        CourierTracker.ETA = math.ceil(remainingDist / math.max(100, speed))
+    local ordered = nowClk - T.DeliveryOrderedTime
+    if T.ViaStash and ordered > 0.3 and (isAtBaseState or distBase < 350 or not hasStashItems) then
+        T.ViaStash = false
+        T.GraceUntil = math.max(T.GraceUntil, nowClk + 3.0)
+    end
+    T.IsGoingToStash = T.ViaStash
+    T.Carry = math.max(T.Carry, itemCount)
 
-        if isDead or (myHero and not Entity.IsAlive(myHero)) then
-            if isDead then HapticPlaySound("courier_death_or_fail", 0.6) end
-            CourierTracker.Delivering = false
-            CourierTracker.DeliveryOrderedTime = 0
-            CourierTracker.StartDistance = 0
-            CourierTracker.Progress = 0.0
-            CourierTracker.IsGoingToStash = false
-        elseif not CourierTracker.IsGoingToStash and distHero <= 450 and (nowClk - CourierTracker.DeliveryOrderedTime > 1.0) then
-            CourierTracker.Delivering = false
-            CourierTracker.DeliveryOrderedTime = 0
-            CourierTracker.StartDistance = 0
-            CourierTracker.Progress = 1.0
-            CourierTracker.Delivered = true
-            CourierTracker.DeliveredStartTime = nowClk
-            CourierTracker.IsGoingToStash = false
-            if ToggleOn(UI and UI.Combat and UI.Combat.CourierFaceID) and not FightTracker.Active and not PauseTracker.IsPaused and Impl.FaceStart("ok", 0.6) then
-                CourierTracker.FaceFor = nowClk
-                Success.Fired["courier" .. nowClk] = true
-                Success.Fired["sat_courier" .. nowClk] = true
-            end
-            if StateMachine.TargetState ~= StateMachine.States.COURIER_DELIVERED then
-                TriggerStateTransition(StateMachine.States.COURIER_DELIVERED)
-            end
-        elseif isReturningState and not CourierTracker.IsGoingToStash and (nowClk - CourierTracker.DeliveryOrderedTime > 4.0) and distHero > 800 then
-            CourierTracker.Delivering = false
-            CourierTracker.DeliveryOrderedTime = 0
-            CourierTracker.StartDistance = 0
-            CourierTracker.Progress = 0.0
-            CourierTracker.IsGoingToStash = false
-        elseif isReturningState and not hasStashItems and itemCount == 0 and (nowClk - CourierTracker.DeliveryOrderedTime > 3.5) then
-            CourierTracker.Delivering = false
-            CourierTracker.DeliveryOrderedTime = 0
-            CourierTracker.StartDistance = 0
-            CourierTracker.Progress = 0.0
-            CourierTracker.IsGoingToStash = false
-        elseif CourierTracker.IsGoingToStash and isAtBaseState and not hasStashItems and itemCount == 0 and (nowClk - CourierTracker.DeliveryOrderedTime > 3.0) then
-            CourierTracker.Delivering = false
-            CourierTracker.DeliveryOrderedTime = 0
-            CourierTracker.StartDistance = 0
-            CourierTracker.Progress = 0.0
-            CourierTracker.IsGoingToStash = false
-        elseif (nowClk - CourierTracker.DeliveryOrderedTime > 120.0) then
-            CourierTracker.Delivering = false
-            CourierTracker.DeliveryOrderedTime = 0
-            CourierTracker.StartDistance = 0
-            CourierTracker.Progress = 0.0
-            CourierTracker.IsGoingToStash = false
+    local eta, remainingDist = Impl.CourierTravel(cOrigin, hOrigin, basePos, T.IsGoingToStash, speed, distBase)
+    if remainingDist > T.StartDistance then
+        T.StartDistance = math.max(remainingDist, 500)
+    end
+    local prog = 1.0 - (remainingDist / math.max(1, T.StartDistance))
+    T.Progress = math.max(T.Progress, math.max(0.0, math.min(1.0, prog)))
+    T.ETA = math.ceil(eta)
+
+    if onRoute or (T.IsGoingToStash and (isReturningState or isAtBaseState)) then
+        T.OffSince = nil
+    else
+        T.OffSince = T.OffSince or nowClk
+    end
+    if distHero <= 300 and not T.IsGoingToStash then
+        T.NearSince = T.NearSince or nowClk
+    else
+        T.NearSince = nil
+    end
+
+    local arrived
+    if T.Carry > 0 and itemCount < T.Carry and distHero <= 1200 then
+        arrived = "items handed over"
+    elseif T.Carry == 0 and T.OffSince and ordered > 1.0 and distHero <= 600 then
+        arrived = "courier left the route next to the hero"
+    elseif T.NearSince and nowClk - T.NearSince > 1.5 then
+        arrived = "courier stays next to the hero"
+    end
+
+    if myHero and not Entity.IsAlive(myHero) then
+        Impl.CourierStop("hero died")
+    elseif arrived then
+        if Dbg.On then Dbg.Log("courier", "delivered: " .. arrived) end
+        T.Delivering = false
+        T.DeliveryOrderedTime = 0
+        T.StartDistance = 0
+        T.Progress = 1.0
+        T.Delivered = true
+        T.DeliveredStartTime = nowClk
+        T.IsGoingToStash = false
+        T.ViaStash = false
+        T.Carry = 0
+        T.OffSince = nil
+        T.NearSince = nil
+        T.Block = true
+        if ToggleOn(UI and UI.Combat and UI.Combat.CourierFaceID) and not FightTracker.Active and not PauseTracker.IsPaused and Impl.FaceStart("ok", 0.6) then
+            Impl.Face.Quiet = Impl.CourierQuiet()
+            T.FaceFor = nowClk
+            Success.Fired["courier" .. nowClk] = true
+            Success.Fired["sat_courier" .. nowClk] = true
         end
+        if StateMachine.TargetState ~= StateMachine.States.COURIER_DELIVERED then
+            TriggerStateTransition(StateMachine.States.COURIER_DELIVERED)
+        end
+    elseif T.OffSince and nowClk - T.OffSince > 0.5 and nowClk > T.GraceUntil then
+        Impl.CourierStop("courier is doing something else, state " .. tostring(cState))
+    elseif ordered > 120.0 then
+        Impl.CourierStop("took over two minutes")
     end
 end
 
@@ -6624,6 +6855,32 @@ function Impl.SwallowClick(data)
         return false
     end
     return nil
+end
+
+Impl.CamHold = { At = 0, Next = 0 }
+
+function Impl.CameraHoldTick()
+    local H = Impl.CamHold
+    local now = os.clock()
+    if not H.W then
+        if now < H.Next then return end
+        H.Next = now + 5
+        H.W = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Camera Distance")
+        if not H.W then return end
+    end
+    local cur = H.W:Get()
+    if now - H.At < 0.3 then
+        if H.Value and cur ~= H.Value then
+            H.W:Set(H.Value)
+        end
+    else
+        H.Value = cur
+    end
+end
+
+function Impl.CameraHold(nowClk)
+    Impl.CamHold.At = nowClk
+    Impl.CameraHoldTick()
 end
 
 function DynamicIsland.OnKeyEvent(data)
@@ -6665,6 +6922,7 @@ function DynamicIsland.OnKeyEvent(data)
                 elseif isUp and st == StateMachine.States.NOTIF_CENTER then
                     TriggerStateTransition(StateMachine.States.LARGE_IDLE)
                 end
+                Impl.CameraHold(os.clock())
                 return false
             end
         end
@@ -6726,6 +6984,7 @@ function DynamicIsland.OnKeyEvent(data)
                 MouseInput.LastKeyEventWheelTime = nowClk
                 VolumeState.LastActive = nowClk
                 VolumeState.Visible = true
+                Impl.CameraHold(nowClk)
                 return false
             end
         end
@@ -6944,6 +7203,7 @@ function Impl.HandleInteractions()
                 end
                 VolumeState.LastActive = nowClk
                 VolumeState.Visible = true
+                Impl.CameraHold(nowClk)
             end
         end
     end
@@ -7396,8 +7656,15 @@ function Impl.HandleInteractions()
             if wantMatch then
                 detected = StateMachine.States.MENU_MATCH_FOUND
             else
-                local isSearching = Impl.GetMatchSearchInfo()
+                local isSearching, searchTime = Impl.GetMatchSearchInfo()
                 detected = isSearching and StateMachine.States.MENU_SEARCHING or StateMachine.States.MENU_IDLE
+                if isSearching then
+                    Impl.MenuSearchAt = nowClk
+                    Impl.MenuSearchTime = searchTime
+                else
+                    Impl.MenuSwap = nil
+                    Impl.MenuSearchHidden = nil
+                end
             end
             Sheet.MenuSince = Sheet.MenuSince or nowClk
             if detected == StateMachine.States.MENU_IDLE and not Hello.Blocking() and Sheet.Pick(nowClk) then
@@ -7406,7 +7673,8 @@ function Impl.HandleInteractions()
             if detected == StateMachine.States.MENU_IDLE and not Hello.Blocking() and not HUDCustomizer.IsOpen and Sdk.Current() then
                 detected = StateMachine.TargetState == StateMachine.States.ACTIVITY_LARGE and StateMachine.States.ACTIVITY_LARGE or StateMachine.States.ACTIVITY
             end
-            if detected == StateMachine.States.MENU_IDLE and not Hello.Blocking() and not HUDCustomizer.IsOpen and ToggleOn(UI and UI.Media and UI.Media.InMenu) and IsMediaActive() then
+            local overSearch = detected == StateMachine.States.MENU_SEARCHING and not Impl.MenuSwap and ToggleOn(UI and UI.Media and UI.Media.SecondaryBubble)
+            if (detected == StateMachine.States.MENU_IDLE or overSearch) and not Hello.Blocking() and not HUDCustomizer.IsOpen and ToggleOn(UI and UI.Media and UI.Media.InMenu) and IsMediaActive() then
                 local cur = StateMachine.TargetState
                 detected = (cur == StateMachine.States.LARGE_MEDIA or cur == StateMachine.States.NOTIF_CENTER) and cur or StateMachine.States.COMPACT_MEDIA
             end
@@ -7802,12 +8070,15 @@ function Impl.HandleInteractions()
                 clickedButton = true
             elseif ButtonHits.MediaLike and cx >= ButtonHits.MediaLike.x1 and cx <= ButtonHits.MediaLike.x2 and cy >= ButtonHits.MediaLike.y1 and cy <= ButtonHits.MediaLike.y2 then
                 ButtonSprings.MediaLike.scale = 0.65
-                if BridgeStatus.SpotifyDebug == "closed" and string.find(string.lower(MediaData.App or ""), "spotify", 1, true) then
+                local likeApp = string.lower(MediaData.App or "")
+                local inYandex = string.find(likeApp, "yandex", 1, true) ~= nil and string.find(likeApp, "music", 1, true) ~= nil
+                local inSpotify = string.find(likeApp, "spotify", 1, true) ~= nil
+                if (BridgeStatus.SpotifyDebug == "closed" and inSpotify) or (BridgeStatus.YandexDebug == "closed" and inYandex) then
                     DynamicIsland.PushNotification({
                         Type = "spotify_like",
-                        Tag = "Spotify",
+                        Tag = inYandex and L("di_ui_yandex_music") or "Spotify",
                         Title = L("di_ui_likes_unavailable"),
-                        Subtitle = L("di_ui_restart_spotify"),
+                        Subtitle = inYandex and L("di_ui_restart_yandex") or L("di_ui_restart_spotify"),
                         AccentColor = Color(255, 159, 10, 255),
                         IconType = "svg",
                         FallbackSvg = "heart_outline"
@@ -7823,9 +8094,9 @@ function Impl.HandleInteractions()
                 SendMediaCommand("like")
                 DynamicIsland.PushNotification({
                     Type = "spotify_like",
-                    Tag = "Spotify",
+                    Tag = inYandex and L("di_ui_yandex_music") or "Spotify",
                     Title = isNowLiked and L("di_ui_liked_songs") or L("di_ui_removed_from_favorites"),
-                    Subtitle = isNowLiked and L("di_ui_saved_to_library") or L("di_ui_removed_from_spotify"),
+                    Subtitle = isNowLiked and L("di_ui_saved_to_library") or (inYandex and L("di_ui_removed_from_yandex") or L("di_ui_removed_from_spotify")),
                     AccentColor = Color(255, 55, 95, 255),
                     IconType = "svg",
                     FallbackSvg = isNowLiked and "heart_fill" or "heart_outline",
@@ -8453,7 +8724,8 @@ function Success.Draw(id, c, r, t, a, scale)
     end
     if t >= 0.75 and not Success.Fired[id] then
         Success.Fired[id] = true
-        if Haptic and Haptic.Trigger then Haptic.Trigger(Haptic.Types.SUCCESS_APPLE_PAY) end
+        local quiet = string.find(id, "courier", 1, true) ~= nil and Impl.CourierQuiet()
+        if Haptic and Haptic.Trigger then Haptic.Trigger(Haptic.Types.SUCCESS_APPLE_PAY, quiet) end
     end
 end
 
@@ -8477,6 +8749,7 @@ function Impl.FaceStart(result, scan)
     F.Scan = math.max(0.4, math.min(3, scan or 1))
     F.Total = 0.4 + F.Scan + (F.Result == "ok" and 1.0 or 0.9)
     F.Fired = false
+    F.Quiet = false
     return true
 end
 
@@ -8519,7 +8792,7 @@ function Impl.RenderFaceID(layout, alphaMul, yOffset)
         end
         if not F.Fired then
             F.Fired = true
-            if Haptic and Haptic.Trigger then Haptic.Trigger(ok and Haptic.Types.SUCCESS_APPLE_PAY or Haptic.Types.ERROR) end
+            if Haptic and Haptic.Trigger then Haptic.Trigger(ok and Haptic.Types.SUCCESS_APPLE_PAY or Haptic.Types.ERROR, ok and F.Quiet == true) end
         end
     end
     local function P(px, py, ox) return Vec2(cx + (ox or 0) + px * S * sc, cy + py * S * sc) end
@@ -9619,6 +9892,10 @@ function Impl.RenderSecondarySatelliteBubble(layout)
             if left > 0.45 then
                 desired, notif = "notif", active
             end
+        elseif (ts == S.COMPACT_MEDIA or ts == S.LARGE_MEDIA) and now - (Impl.MenuSearchAt or 0) < 0.5 and not Impl.MenuSearchHidden then
+            desired = "search"
+        elseif ts == S.MENU_SEARCHING and Impl.MenuSwap and ToggleOn(UI.Media.InMenu) and IsMediaActive() then
+            desired = "media"
         elseif FightTracker.Active and not active and Sdk.Current() then
             desired, R.act = "activity", Sdk.Current()
         elseif FightTracker.Active and (active or IsMediaActive()) then
@@ -9642,7 +9919,7 @@ function Impl.RenderSecondarySatelliteBubble(layout)
     end
     local kind = R.kind
     local combatMedia = kind == "combat" and not active and IsMediaActive()
-    local wide = kind == "notif" or kind == "aegis" or (combatMedia and FightTracker.SatelliteHover) or (kind == "rampage" and not rampageSuccess)
+    local wide = kind == "notif" or kind == "aegis" or kind == "search" or (combatMedia and FightTracker.SatelliteHover) or (kind == "rampage" and not rampageSuccess)
         or ((kind == "media" or kind == "activity" or kind == "pause" or kind == "courier" or kind == "fight") and FightTracker.SatelliteHover)
     local sat = Satellite.Step("right", kind ~= nil and kind == desired, wide)
     ButtonHits.SatellitePrev = nil
@@ -9798,6 +10075,18 @@ function Impl.RenderSecondarySatelliteBubble(layout)
                 else
                     Odometer.Text("sat_courier", fontBold, headSize, txt, pos, FadeColor(Config.Colors.TextPrimary, ta))
                 end
+            end
+        end
+    elseif kind == "search" then
+        local txt = Impl.MenuSearchTime or "0:00"
+        local tw = Odometer.Width(fontBold, headSize, txt)
+        local th = Render.TextSize(fontBold, headSize, "0").y
+        fullW = bh + math.floor(5 * scale) + tw + math.floor(bh * 0.38)
+        content = function(x1, y1, x2, y2, d, ca, ta)
+            local c = Vec2(x1 + d / 2, (y1 + y2) / 2)
+            Journey.Spinner(c.x, c.y, d * 0.25, Config.Colors.TextPrimary, ca)
+            if ta > 0.01 then
+                Odometer.Text("sat_search", fontBold, headSize, txt, Vec2(math.floor(x1 + d + 5 * scale), math.floor(c.y - th / 2)), FadeColor(Config.Colors.Blue, ta))
             end
         end
     elseif kind == "fight" then
@@ -15179,6 +15468,8 @@ function Impl.DismissSatellite(kind, nowClk)
         Sdk.ActEnd(Satellite.Right.act, "dismissed")
     elseif kind == "aegis" then
         GameTracker.Roshan.Dismissed = true
+    elseif kind == "search" then
+        Impl.MenuSearchHidden = true
     elseif kind then
         Impl.SatHidden[kind] = true
     end
@@ -15632,6 +15923,11 @@ function DynamicIsland.OnUpdateEx()
             GameTracker.Roshan.AegisHolder = nil
             GameTracker.Roshan.HasAegis = false
             GameTracker.Roshan.LastAttackAlert = 0
+            GameTracker.Roshan.LastHP = nil
+            GameTracker.Roshan.HpAt = nil
+            GameTracker.Roshan.HpLogged = nil
+            GameTracker.Roshan.AegisClaimedAt = nil
+            GameTracker.Roshan.AegisClaimedBy = nil
             GameTracker.Roshan.Dismissed = false
         end
         HeroData.Local = nil
@@ -15642,10 +15938,17 @@ function DynamicIsland.OnUpdateEx()
         CourierTracker.IsGoingToStash = false
         CourierTracker.Progress = 0.0
         CourierTracker.StartDistance = 0
+        CourierTracker.ViaStash = false
+        CourierTracker.Carry = 0
+        CourierTracker.Block = false
+        CourierTracker.Zone.In = nil
+        CourierTracker.Zone.Out = nil
+        CourierTracker.Zone.PrevAt = nil
         CourierTracker.BasePos = nil
         CourierTracker.CachedCourier = nil
     end
     MouseInput.LiveAt = os.clock()
+    Fuse.Guard("camera", Impl.CameraHoldTick)
     Fuse.Guard("input", Impl.HandleInteractions)
     Fuse.Guard("media", Impl.PollMediaBridge)
     Fuse.Guard("level", Impl.PollLevel)
