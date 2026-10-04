@@ -7,6 +7,7 @@
 /docs/*
 !/docs/autostart.md
 !/docs/spotify-likes.md
+!/docs/yandex-music-likes.md
 !/docs/sdk.md
 !/examples/
 

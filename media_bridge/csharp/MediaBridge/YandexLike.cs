@@ -5,7 +5,8 @@ public static class YandexLike
     public const int Port = 9223;
     public const string Flag = "--remote-debugging-port=9223";
     private const string PageUrl = "music-application://";
-    private const string Button = "const b = document.querySelector('[data-test-id=\"PLAYERBAR_DESKTOP\"] [data-test-id=\"LIKE_BUTTON\"]');";
+    private const string Button = "const b = document.querySelector('[data-test-id=\"PLAYERBAR_DESKTOP\"] [data-test-id=\"LIKE_BUTTON\"]')" +
+        " || document.querySelector('[data-test-id=\"VIBE_PLAYERBAR\"] [data-test-id=\"LIKE_BUTTON\"]');";
 
     private static string _state = "none";
     private static DateTime _stateAt = DateTime.MinValue;
