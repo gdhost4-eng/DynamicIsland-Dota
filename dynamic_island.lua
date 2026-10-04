@@ -1874,6 +1874,31 @@ local Impl = {}
 
 local Dbg = { On = false, TB = debug and debug.traceback }
 
+Impl.HttpUnsent = {}
+
+function Impl.HttpRequest(method, url, data, cb, tag)
+    if not Dbg.On or type(cb) ~= "function" then
+        if tag ~= nil then return HTTP.Request(method, url, data, cb, tag) end
+        return HTTP.Request(method, url, data, cb)
+    end
+    local at = os.clock()
+    local path = string.match(url, "^https?://[^/]+(/[^?]*)") or url
+    local function done(res)
+        local took = os.clock() - at
+        if took > 1.5 then
+            Dbg.Log("http", string.format("slow answer on %s: %.1f s, code %s, error %s %s", path, took, tostring(res and res.code), tostring(res and res.error_code), tostring(res and res.error_message)))
+        end
+        return cb(res)
+    end
+    local sent
+    if tag ~= nil then sent = HTTP.Request(method, url, data, done, tag) else sent = HTTP.Request(method, url, data, done) end
+    if sent == false and at - (Impl.HttpUnsent[path] or 0) > 2 then
+        Impl.HttpUnsent[path] = at
+        Dbg.Log("http", "request was not sent: " .. path)
+    end
+    return sent
+end
+
 local Fuse = { Count = {}, Off = {}, Logged = 0 }
 
 function Fuse.Fail(name, err)
@@ -2065,7 +2090,7 @@ local CourierTracker = {
     ViaStash = false,
     Carry = 0,
     GraceUntil = 0,
-    Zone = {}
+    Zone = { R = 1200, Guess = true }
 }
 
 local VolumeState = {
@@ -2586,7 +2611,7 @@ local function SaveAllConfig()
             if Sheet.SeenVer then f:write("seen_ver=" .. Sheet.SeenVer .. "\n") end
             if Sheet.BridgeHintSeen then f:write("bridge_hint=1\n") end
             if Hello.SetupDone then f:write("setup_done=1\n") end
-            if CourierTracker.Zone.R then f:write(string.format("courier_zone=%d,%.3f\n", math.floor(CourierTracker.Zone.R), CourierTracker.Zone.Ratio or 1)) end
+            if CourierTracker.Zone.R and not CourierTracker.Zone.Guess then f:write(string.format("courier_zone=%d,%.3f\n", math.floor(CourierTracker.Zone.R), CourierTracker.Zone.Ratio or 1.5)) end
             if Impl.Ly.Open then f:write("lyrics_open=1\n") end
             if Hello.ChatPrev ~= nil then f:write("hello_chat=" .. (Hello.ChatPrev and "1" or "0") .. "\n") end
             if Hello.StampValue or Hello.SavedStamp then f:write("hello_stamp=" .. tostring(Hello.StampValue or Hello.SavedStamp) .. "\n") end
@@ -2737,6 +2762,7 @@ function Impl.LoadAllConfig()
             if zr and zk and zr >= 300 and zr <= 4500 and zk >= 1.1 and zk <= 3 then
                 CourierTracker.Zone.R = zr
                 CourierTracker.Zone.Ratio = zk
+                CourierTracker.Zone.Guess = nil
             end
         elseif line == "lyrics_open=1" then
             Impl.Ly.Open = true
@@ -3122,7 +3148,7 @@ local function HapticPlaySound(appleSoundName, arg2, arg3)
                     end
                 end
             end
-            pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/sound?name=" .. appleSoundName .. "&vol=" .. string.format("%.2f", finalVol) .. forceParam .. duckParam, {}, function() end)
+            pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/sound?name=" .. appleSoundName .. "&vol=" .. string.format("%.2f", finalVol) .. forceParam .. duckParam, {}, function() end)
         end
     end
 end
@@ -3809,7 +3835,7 @@ function Impl.InitMenu()
             local userVol = (UI and UI.Haptics and UI.Haptics.Volume) and (UI.Haptics.Volume:Get() / 100.0) or 0.5
             local baseDuckPct = (UI and UI.Haptics and UI.Haptics.DuckingAmount and UI.Haptics.DuckingAmount:Get() or 50) / 100.0
             local finalDuck = string.format("%.2f", baseDuckPct)
-            pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/sound?name=courier_delivered&vol=" .. string.format("%.2f", userVol) .. "&force=1&duck=" .. finalDuck, {}, function() end)
+            pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/sound?name=courier_delivered&vol=" .. string.format("%.2f", userVol) .. "&force=1&duck=" .. finalDuck, {}, function() end)
         end
     end)
     H.TestDucking:ToolTip("di_haptics_test_ducking_tip")
@@ -4407,7 +4433,7 @@ local function SendMediaCommand(cmd)
     local sentAt = os.clock()
     local port = 45455
     local url = string.format("http://127.0.0.1:%d/media/%s", port, cmd)
-    pcall(HTTP.Request, "GET", url, {}, function(res)
+    pcall(Impl.HttpRequest, "GET", url, {}, function(res)
         if Dbg.On then Dbg.MediaReply(base, res, sentAt) end
         if res and res.response and res.response ~= "" then
             local vStr = string.match(res.response, '"volume"%s*:%s*(%d+)')
@@ -4631,7 +4657,7 @@ function Impl.PollLevel()
     if MediaData.LevelBusy and now - MediaData.LevelBusy < 1.5 then return end
     MediaData.LevelPoll = now
     MediaData.LevelBusy = now
-    pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/level", {}, function(res)
+    pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/level", {}, function(res)
         MediaData.LevelBusy = nil
         if not res or not res.response then return end
         local body = string.match(res.response, '"l"%s*:%s*%[([^%]]*)%]')
@@ -4667,7 +4693,7 @@ function Impl.PollMediaBridge()
     local likes = (UI.Media.SpotifyLike and UI.Media.SpotifyLike:Get()) and "1" or "0"
     local url = string.format("http://127.0.0.1:%d/media", port) .. Impl.MediaQuery .. (Impl.MediaQuery == "" and "?" or "&") .. "likes=" .. likes
 
-    pcall(HTTP.Request, "GET", url, {}, function(res)
+    pcall(Impl.HttpRequest, "GET", url, {}, function(res)
         MediaData.PollBusy = nil
         if not res or not res.response or res.response == "" then return end
         local body = res.response
@@ -4853,7 +4879,7 @@ function Impl.PollBridgeStatus()
     BridgeStatus.LastPoll = clk
     BridgeStatus.Busy = clk
     if BridgeStatus.FirstPoll == 0 then BridgeStatus.FirstPoll = clk end
-    pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/status", {}, function(res)
+    pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/status", {}, function(res)
         BridgeStatus.Busy = nil
         local body = res and res.response or ""
         if not string.find(body, '"status"', 1, true) then
@@ -4893,7 +4919,7 @@ function Impl.PollSystem()
     if SystemState.Busy and clk - SystemState.Busy < 3.0 then return end
     SystemState.LastPoll = clk
     SystemState.Busy = clk
-    pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/system", {}, function(res)
+    pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/system", {}, function(res)
         SystemState.Busy = nil
         if not res or not res.response or res.response == "" then return end
         local body = res.response
@@ -6352,14 +6378,11 @@ function Impl.GetFountainPosition(hero, courier)
     if CourierTracker.BasePos then
         return CourierTracker.BasePos
     end
-    if courier and Entity.IsAlive(courier) then
-        local cState = Courier.GetCourierState and Courier.GetCourierState(courier) or 0
-        if cState == Enum.CourierState.COURIER_STATE_AT_BASE or cState == 1 then
-            local pos = Entity.GetAbsOrigin(courier)
-            if pos then
-                CourierTracker.BasePos = pos
-                return pos
-            end
+    if courier and Entity.IsAlive(courier) and NPC.HasModifier(courier, "modifier_fountain_aura_buff") and not NPC.IsRunning(courier) then
+        local pos = Entity.GetAbsOrigin(courier)
+        if pos then
+            CourierTracker.BasePos = pos
+            return pos
         end
     end
     local myHero = hero or HeroData.Local or (Heroes and Heroes.GetLocal and Heroes.GetLocal())
@@ -6454,6 +6477,8 @@ end
 
 function Impl.CourierBegin(nowClk, viaStash, source)
     local T = CourierTracker
+    if T.Delivering and T.Source == source and nowClk - T.DeliveryOrderedTime < 0.5 then return end
+    T.Source = source
     T.DeliveryOrderedTime = nowClk
     T.Delivering = true
     T.Delivered = false
@@ -6466,9 +6491,10 @@ function Impl.CourierBegin(nowClk, viaStash, source)
     T.OffSince = nil
     T.NearSince = nil
     T.Block = false
-    T.GraceUntil = nowClk + 3.0
+    T.GraceUntil = nowClk + 1.0
     T.TowardAt = nowClk
     T.MoveAt = nil
+    T.DirectHits = 0
     if Dbg.On then Dbg.Log("courier", "delivery started by " .. source .. (viaStash and ", through the stash" or "")) end
     if StateMachine.TargetState ~= StateMachine.States.COURIER_DELIVERY and StateMachine.TargetState ~= StateMachine.States.COURIER_LARGE then
         TriggerStateTransition(StateMachine.States.COURIER_DELIVERY)
@@ -6507,7 +6533,7 @@ function Impl.CourierSegIn(a, b, center, r)
     return t2 - t1, len
 end
 
-function Impl.CourierTravel(cO, hO, basePos, viaBase, speed, distBase)
+function Impl.CourierTravel(cO, hO, basePos, viaBase, speed, inFountain)
     if not cO or not hO or not basePos then return 0, 0 end
     local Z = CourierTracker.Zone
     local r = Z.R or 0
@@ -6519,10 +6545,9 @@ function Impl.CourierTravel(cO, hO, basePos, viaBase, speed, distBase)
     else
         inLen, total = Impl.CourierSegIn(cO, hO, basePos, r)
     end
-    if not Z.R then return total / math.max(100, speed), total end
-    local k = Z.Ratio or 1
+    local k = Z.Ratio or 1.5
     local inSpeed, outSpeed
-    if distBase < r then
+    if inFountain then
         inSpeed = speed
         outSpeed = math.min(speed, Z.Out or speed / k)
     else
@@ -6532,40 +6557,23 @@ function Impl.CourierTravel(cO, hO, basePos, viaBase, speed, distBase)
     return inLen / math.max(100, inSpeed) + (total - inLen) / math.max(100, outSpeed), total
 end
 
-function Impl.CourierLearnZone(c, distBase, speed, onRoute)
+function Impl.CourierLearnZone(c, distBase, speed, inFountain)
     local Z = CourierTracker.Zone
-    local now = GameRules.GetGameTime()
-    local pS, pD, pAt = Z.PrevSpeed, Z.PrevDist, Z.PrevAt
-    Z.PrevSpeed, Z.PrevDist, Z.PrevAt = speed, distBase, now
-    local burst = NPC.GetAbility(c, "courier_burst")
-    local since = burst and Ability.SecondsSinceLastUse(burst) or -1
-    if since >= 0 and since < 7 then
-        Z.PrevAt = nil
-        return
+    local was = Z.WasIn
+    Z.WasIn = inFountain
+    if was ~= nil and was ~= inFountain and CourierTracker.BasePos and distBase >= 200 and distBase <= 4500 and NPC.IsRunning(c) then
+        Z.R = (Z.Guess or not Z.R) and distBase or (Z.R + distBase) / 2
+        Z.Guess = nil
+        Impl.CourierDebug(c, string.format("fountain speed zone edge at %.0f from the base, zone is now %.0f", distBase, Z.R))
     end
-    if pAt and now > pAt and now - pAt <= 0.5 and pS > 0 then
-        local ratio = pS / speed
-        local r = (distBase + pD) / 2
-        local k
-        if distBase > pD + 1 and ratio > 1.12 and ratio < 3 then
-            k = ratio
-        elseif distBase < pD - 1 and ratio < 1 / 1.12 and ratio > 1 / 3 then
-            k = 1 / ratio
-        end
-        if k and r >= 300 and r <= 4500 then
-            Z.R = Z.R and (Z.R + r) / 2 or r
-            Z.Ratio = k
-            Z.In, Z.Out = math.max(pS, speed), math.min(pS, speed)
-            Impl.CourierDebug(c, string.format("base speed zone measured: edge at %.0f, speed %.0f inside and %.0f outside", r, Z.In, Z.Out))
-            return
-        end
-    end
-    if not Z.R or not NPC.IsRunning(c) then return end
-    if distBase < Z.R - 100 then
+    if inFountain then
         Z.In = speed
-    elseif distBase > Z.R + 100 and onRoute then
-        Z.Out = speed
+    else
+        local burst = NPC.GetAbility(c, "courier_burst")
+        local since = burst and Ability.SecondsSinceLastUse(burst) or -1
+        if since < 0 or since >= 7 then Z.Out = speed end
     end
+    if Z.In and Z.Out and Z.Out > 0 and Z.In > Z.Out then Z.Ratio = Z.In / Z.Out end
 end
 
 function Impl.ProcessPauseTracker()
@@ -6594,6 +6602,16 @@ Impl.CourierAbort = {
     courier_transfer_items_to_other_player = true
 }
 
+Impl.CourierManual = {
+    [Enum.UnitOrder.DOTA_UNIT_ORDER_STOP] = true,
+    [Enum.UnitOrder.DOTA_UNIT_ORDER_HOLD_POSITION] = true,
+    [Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION] = true,
+    [Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_DIRECTION] = true,
+    [Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_TARGET] = true,
+    [Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE] = true,
+    [Enum.UnitOrder.DOTA_UNIT_ORDER_PATROL] = true
+}
+
 function DynamicIsland.OnPrepareUnitOrders(data)
     if HUDCustomizer.IsOpen and Menu.Opened and Menu.Opened() then
         return false
@@ -6601,36 +6619,39 @@ function DynamicIsland.OnPrepareUnitOrders(data)
     if data then
         if data.ability then
             local abName = Ability.GetName(data.ability)
+            if Dbg.On and abName and string.sub(abName, 1, 8) == "courier_" then Dbg.Log("courier", "ability order " .. abName) end
             if abName == "courier_take_stash_and_transfer_items" or abName == "courier_transfer_items" then
                 local c = Impl.GetLocalCourier()
                 local myHero = HeroData.Local or (Heroes and Heroes.GetLocal and Heroes.GetLocal())
                 if c and myHero then
                     local viaStash = abName ~= "courier_transfer_items" and Impl.CourierHasItems(myHero, 9, 14)
                     if viaStash or Impl.CourierHasItems(c, 0, 8) then
-                        local atBase = Courier.GetCourierState(c) == Enum.CourierState.COURIER_STATE_AT_BASE
-                        Impl.CourierBegin(os.clock(), viaStash and not atBase, "order " .. abName)
+                        Impl.CourierBegin(os.clock(), viaStash and not NPC.HasModifier(c, "modifier_fountain_aura_buff"), "order " .. abName)
                     end
                 end
             elseif abName and Impl.CourierAbort[abName] then
                 Impl.CourierStop("order " .. abName)
             end
-        end
-        if data.npc and Entity.IsAlive(data.npc) and Courier and Courier.IsFlyingCourier then
-            local isCourierUnit = false
-            if Couriers and Couriers.Contains and Couriers.Contains(data.npc) then
-                isCourierUnit = true
-            elseif NPC.GetUnitName(data.npc) and string.find(NPC.GetUnitName(data.npc), "courier") then
-                isCourierUnit = true
+        elseif Impl.CourierManual[data.order] then
+            local mine = Impl.GetLocalCourier()
+            local hit = mine ~= nil and data.npc ~= nil and Impl.CourierIsMe(data.npc, mine)
+            if mine and not hit and data.player then
+                local ok, sel = pcall(Player.GetSelectedUnits, data.player)
+                if ok and type(sel) == "table" then
+                    for _, u in ipairs(sel) do
+                        if Impl.CourierIsMe(u, mine) then
+                            hit = true
+                            break
+                        end
+                    end
+                end
             end
-            if isCourierUnit then
+            if hit then
                 local myHero = HeroData.Local or (Heroes and Heroes.GetLocal and Heroes.GetLocal())
-                local O = Enum.UnitOrder
-                if data.target and myHero and data.target == myHero and data.order == O.DOTA_UNIT_ORDER_MOVE_TO_TARGET then
+                if Dbg.On then Dbg.Log("courier", "manual order " .. tostring(data.order) .. " on the courier") end
+                if data.order == Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_TARGET and data.target and myHero and Impl.CourierIsMe(data.target, myHero) then
                     Impl.CourierBegin(os.clock(), false, "order to follow the hero")
-                elseif data.order == O.DOTA_UNIT_ORDER_STOP or data.order == O.DOTA_UNIT_ORDER_HOLD_POSITION
-                    or data.order == O.DOTA_UNIT_ORDER_MOVE_TO_POSITION or data.order == O.DOTA_UNIT_ORDER_MOVE_TO_DIRECTION
-                    or data.order == O.DOTA_UNIT_ORDER_MOVE_TO_TARGET or data.order == O.DOTA_UNIT_ORDER_ATTACK_MOVE
-                    or data.order == O.DOTA_UNIT_ORDER_PATROL then
+                else
                     Impl.CourierStop("manual order " .. tostring(data.order))
                 end
             end
@@ -6681,11 +6702,10 @@ function Impl.ProcessCourierTracker()
     local myHero = HeroData.Local or (Heroes and Heroes.GetLocal and Heroes.GetLocal())
     local isDeliveringState = cState == CS.COURIER_STATE_DELIVERING_ITEMS
     local isMovingState = cState == CS.COURIER_STATE_MOVING
-    local isReturningState = cState == CS.COURIER_STATE_RETURNING_TO_BASE
-    local isAtBaseState = cState == CS.COURIER_STATE_AT_BASE
+    local inFountain = NPC.HasModifier(c, "modifier_fountain_aura_buff")
 
     local cOrigin = Entity.GetAbsOrigin(c)
-    if isAtBaseState and cOrigin then
+    if inFountain and cOrigin and not NPC.IsRunning(c) then
         T.BasePos = cOrigin
     end
     local hOrigin = myHero and Entity.GetAbsOrigin(myHero)
@@ -6744,18 +6764,18 @@ function Impl.ProcessCourierTracker()
     T.CurrentDistance = distHero
 
     local targetMe = Impl.CourierIsMe(cTarget, myHero)
-    local onRoute = (isDeliveringState and (cTarget == nil or targetMe)) or (isMovingState and targetMe)
+    local onRoute = itemCount > 0 and ((isDeliveringState and (cTarget == nil or targetMe)) or (isMovingState and targetMe))
     if not onRoute then T.Block = false end
 
     if Dbg.On and T.DbgState ~= cState then
         T.DbgState = cState
-        Impl.CourierDebug(c, string.format("state changed, target %s, %.0f from the hero, %.0f from the base, %d items", cTarget and (targetMe and "me" or "someone else") or "none", distHero, distBase, itemCount))
+        Impl.CourierDebug(c, string.format("state changed, target %s, %.0f from the hero, %.0f from the base, %d items, %s", cTarget and (targetMe and "me" or "someone else") or "none", distHero, distBase, itemCount, inFountain and "in the fountain" or "outside"))
     end
 
-    Impl.CourierLearnZone(c, distBase, speed, onRoute)
+    Impl.CourierLearnZone(c, distBase, speed, inFountain)
 
     if not T.Delivering and not T.Delivered and not T.Block and onRoute and distHero > 450 and myHero and Entity.IsAlive(myHero) then
-        Impl.CourierBegin(nowClk, hasStashItems and itemCount == 0 and not isAtBaseState, "state")
+        Impl.CourierBegin(nowClk, false, "state")
     end
 
     if not T.Delivering then return end
@@ -6765,11 +6785,11 @@ function Impl.ProcessCourierTracker()
     end
 
     local ordered = nowClk - T.DeliveryOrderedTime
-    if T.ViaStash and ordered > 0.3 and (isAtBaseState or distBase < 350 or not hasStashItems) then
+    if T.ViaStash and ordered > 0.3 and (inFountain or not hasStashItems) then
         T.ViaStash = false
-        T.GraceUntil = math.max(T.GraceUntil, nowClk + 3.0)
+        T.GraceUntil = math.max(T.GraceUntil, nowClk + 1.0)
         T.TowardAt = nowClk
-        if Dbg.On then Dbg.Log("courier", "stash picked up, heading to the hero") end
+        if Dbg.On then Dbg.Log("courier", "stash leg is over, heading to the hero") end
     end
     T.IsGoingToStash = T.ViaStash
     T.Carry = math.max(T.Carry, itemCount)
@@ -6779,19 +6799,33 @@ function Impl.ProcessCourierTracker()
         T.MoveAt = nil
     elseif not T.MoveAt or nowClk - T.MoveAt >= 0.25 then
         if T.MoveAt and nowClk - T.MoveAt < 1.0 then
-            local goal = T.IsGoingToStash and basePos or hOrigin
             local dx, dy = cOrigin.x - T.MoveX, cOrigin.y - T.MoveY
-            local gx, gy = goal.x - T.MoveX, goal.y - T.MoveY
             local moved = math.sqrt(dx * dx + dy * dy)
-            local gl = math.sqrt(gx * gx + gy * gy)
-            if moved > 20 and gl > 1 and (dx * gx + dy * gy) / (moved * gl) > 0.3 then
-                T.TowardAt = nowClk
+            if moved > 20 then
+                local hx, hy = hOrigin.x - T.MoveX, hOrigin.y - T.MoveY
+                local hl = math.sqrt(hx * hx + hy * hy)
+                local toHero = hl > 1 and (dx * hx + dy * hy) / (moved * hl) or 1
+                local toBase = -1
+                if T.ViaStash and basePos then
+                    local bx, by = basePos.x - T.MoveX, basePos.y - T.MoveY
+                    local bl = math.sqrt(bx * bx + by * by)
+                    toBase = bl > 1 and (dx * bx + dy * by) / (moved * bl) or 1
+                end
+                if toHero > 0.3 or toBase > 0.3 then T.TowardAt = nowClk end
+                if T.ViaStash then
+                    T.DirectHits = (toHero > 0.6 and toBase < 0) and (T.DirectHits or 0) + 1 or 0
+                    if T.DirectHits >= 6 then
+                        T.ViaStash = false
+                        T.IsGoingToStash = false
+                        if Dbg.On then Dbg.Log("courier", "courier skips the base and flies straight to the hero") end
+                    end
+                end
             end
         end
         T.MoveAt, T.MoveX, T.MoveY = nowClk, cOrigin.x, cOrigin.y
     end
 
-    local eta, remainingDist = Impl.CourierTravel(cOrigin, hOrigin, basePos, T.IsGoingToStash, speed, distBase)
+    local eta, remainingDist = Impl.CourierTravel(cOrigin, hOrigin, basePos, T.IsGoingToStash, speed, inFountain)
     if remainingDist > T.StartDistance then
         T.StartDistance = math.max(remainingDist, 500)
     end
@@ -6800,7 +6834,7 @@ function Impl.ProcessCourierTracker()
     T.ETA = math.ceil(eta)
 
     local atShop = cState == CS.COURIER_STATE_GOING_TO_SECRET_SHOP or cState == CS.COURIER_STATE_AT_SECRET_SHOP
-    if not atShop and nowClk - (T.TowardAt or 0) < 2.0 then
+    if not atShop and nowClk - (T.TowardAt or 0) < 1.5 then
         T.OffSince = nil
     else
         T.OffSince = T.OffSince or nowClk
@@ -10768,7 +10802,7 @@ function Impl.LyTick(dt)
         Ly.Status = "loading"
         Ly.LoadAt = now
         local q = "artist=" .. Sheet.UrlEncode(MediaData.Artist or "") .. "&title=" .. Sheet.UrlEncode(MediaData.Title) .. "&album=" .. Sheet.UrlEncode(MediaData.Album or "") .. string.format("&dur=%d", math.floor((MediaData.Duration or 0) + 0.5))
-        local ok = pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/lyrics?" .. q, {}, function(res) Impl.LyReply(key, res) end, "di_lyrics")
+        local ok = pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/lyrics?" .. q, {}, function(res) Impl.LyReply(key, res) end, "di_lyrics")
         if not ok then
             Ly.Status = "error"
             Ly.RetryAt = now + 20
@@ -11814,7 +11848,7 @@ function Sheet.StartUpdate(now)
     Sheet.Upd.Error = ""
     Sheet.Upd.LastOk = now
     local q = "dir=" .. Sheet.UrlEncode(dir) .. (self and ("&path=" .. Sheet.UrlEncode(self)) or "")
-    pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/update/start?" .. q, {}, function() end, "di_update_start")
+    pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/update/start?" .. q, {}, function() end, "di_update_start")
 end
 
 function Sheet.PollFonts(now)
@@ -11826,7 +11860,7 @@ function Sheet.PollFonts(now)
     end
     if now - f.LastPoll < 0.4 then return end
     f.LastPoll = now
-    pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/fonts", {}, function(res)
+    pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/fonts", {}, function(res)
         if not res or not res.response or res.response == "" then return end
         local st = string.match(res.response, '"state"%s*:%s*"([^"]*)"')
         if not st then return end
@@ -11852,7 +11886,7 @@ function Sheet.PollUpdate()
     end
     if now - u.LastPoll < 0.25 then return end
     u.LastPoll = now
-    pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/update/status", {}, function(res)
+    pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/update/status", {}, function(res)
         if not res or not res.response or res.response == "" then return end
         local body = res.response
         local st = string.match(body, '"state"%s*:%s*"([^"]*)"')
@@ -11875,13 +11909,13 @@ function Sheet.Action(action, now)
     elseif action == "restart" then
         Sheet.Upd.State = "restarting"
         Sheet.ReloadAt = now + 1.2
-        pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/update/restart", {}, function() end, "di_update_restart")
+        pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/update/restart", {}, function() end, "di_update_restart")
     elseif action == "reload" then
         Sheet.ReloadAt = now + 0.2
     elseif action == "fonts_install" then
         Sheet.Fonts.State = "installing"
         Sheet.Fonts.LastOk = now
-        pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/fonts/install", {}, function() end, "di_fonts_install")
+        pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/fonts/install", {}, function() end, "di_fonts_install")
     elseif action == "fonts_later" then
         Sheet.FontsDismissed = true
         Sheet.Fonts.State = "idle"
@@ -13859,7 +13893,7 @@ function Dbg.VolumeDone()
 end
 
 function Dbg.AudioDiag(why)
-    pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/diag/audio", {}, function(res)
+    pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/diag/audio", {}, function(res)
         local body = res and res.response or ""
         if body == "" or not string.find(body, '"sessions"', 1, true) then
             Dbg.Log("media", "audio sessions (" .. why .. "): this bridge can not list them, update it")
@@ -13938,7 +13972,7 @@ end
 function Dbg.Reveal()
     Dbg.Flush()
     if not Dbg.Path then Dbg.Path = Dbg.Dir() .. Dbg.File end
-    pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/reveal", {}, function() end, "di_reveal")
+    pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/reveal", {}, function() end, "di_reveal")
     Log.Write("[Dynamic Island] debug log: " .. Dbg.Path)
 end
 
@@ -14684,7 +14718,7 @@ function Hello.CloseMenu()
     if not ok2 then return end
     local vk = Impl.ButtonVK(code)
     if not vk then return end
-    pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/key?vk=" .. tostring(vk), {}, function() end, "di_key")
+    pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/key?vk=" .. tostring(vk), {}, function() end, "di_key")
 end
 
 function Hello.Stamp()
@@ -14979,7 +15013,7 @@ function Setup.Action(h, now)
         UI.Media.SpotifyLike:Set(not UI.Media.SpotifyLike:Get())
         SaveAllConfig()
     elseif a == "like_guide" then
-        pcall(HTTP.Request, "GET", "http://127.0.0.1:45455/open?url=" .. Sheet.UrlEncode("https://github.com/qhols/DynamicIsland-Dota/blob/main/docs/spotify-likes.md"), {}, function() end, "di_open_docs")
+        pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/open?url=" .. Sheet.UrlEncode("https://github.com/qhols/DynamicIsland-Dota/blob/main/docs/spotify-likes.md"), {}, function() end, "di_open_docs")
     elseif a == "capture" then
         Setup.Capture = not Setup.Capture
     end
