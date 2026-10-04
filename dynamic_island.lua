@@ -6637,7 +6637,6 @@ function DynamicIsland.OnPrepareUnitOrders(data)
     if data then
         if data.ability then
             local abName = Ability.GetName(data.ability)
-            if Dbg.On and abName and string.sub(abName, 1, 8) == "courier_" then Dbg.Log("courier", "ability order " .. abName) end
             if abName == "courier_take_stash_and_transfer_items" or abName == "courier_transfer_items" then
                 local c = Impl.GetLocalCourier()
                 local myHero = HeroData.Local or (Heroes and Heroes.GetLocal and Heroes.GetLocal())
@@ -6947,7 +6946,7 @@ function Impl.SwallowClick(data)
     return nil
 end
 
-Impl.CamHold = { At = 0, Next = 0 }
+Impl.Cam = { Next = 0 }
 
 function Impl.CameraMark(value)
     for _, path in ipairs({ "dynamic_island_cam.txt", "scripts/dynamic_island_cam.txt" }) do
@@ -6967,51 +6966,37 @@ function Impl.CameraMark(value)
 end
 
 function Impl.CameraFind(now)
-    local H = Impl.CamHold
-    if H.W or now < H.Next then return end
+    local H = Impl.Cam
+    if H.Mode or now < H.Next then return end
     H.Next = now + 5
-    H.W = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Camera Distance")
-    H.Smooth = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Smooth Zoom")
-    H.SmoothTime = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Smoothness Duration")
     H.Mode = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Zoom using Wheel")
-    H.Plain, H.Alt = nil, nil
-    local names = "unknown"
-    if H.Mode then
-        local okL, list = pcall(H.Mode.List, H.Mode)
-        if okL and type(list) == "table" then
-            names = table.concat(list, " | ")
-            local ctrl, other
-            for i, name in ipairs(list) do
-                local up = string.upper(tostring(name))
-                if string.find(up, "ALT", 1, true) then
-                    H.Alt = H.Alt or (i - 1)
-                elseif string.find(up, "CTRL", 1, true) then
-                    ctrl = ctrl or (i - 1)
-                elseif string.find(up, "WHEEL", 1, true) then
-                    H.Plain = H.Plain or (i - 1)
-                elseif up ~= "OFF" then
-                    other = i - 1
-                end
+    if not H.Mode then return end
+    H.Plain, H.Keys = nil, nil
+    local ok, list = pcall(H.Mode.List, H.Mode)
+    if ok and type(list) == "table" then
+        local ctrl
+        for i, name in ipairs(list) do
+            local up = string.upper(tostring(name))
+            if string.find(up, "ALT", 1, true) then
+                H.Keys = H.Keys or (i - 1)
+            elseif string.find(up, "CTRL", 1, true) then
+                ctrl = ctrl or (i - 1)
+            elseif string.find(up, "WHEEL", 1, true) then
+                H.Plain = H.Plain or (i - 1)
             end
-            H.Alt = H.Alt or ctrl
-            H.Plain = H.Plain or other
         end
-        local left = Impl.CameraMark()
-        if left and left > 0 then
-            if H.Alt and H.Mode:Get() == H.Alt then H.Mode:Set(left - 1) end
-            Impl.CameraMark(0)
-            if Dbg.On then Dbg.Log("camera", "wheel zoom mode put back after a reload") end
-        end
+        H.Keys = H.Keys or ctrl
+        if Dbg.On then Dbg.Log("camera", string.format("umbrella wheel zoom: selected %s, options %s", tostring(H.Mode:Get()), table.concat(list, " | "))) end
     end
-    if Dbg.On and H.Found ~= (H.W ~= nil) then
-        H.Found = H.W ~= nil
-        Dbg.Log("camera", H.W and ("umbrella camera distance slider found, value " .. tostring(H.W:Get())) or "umbrella camera distance slider not found")
-        Dbg.Log("camera", string.format("zoom using wheel: selected %s, options %s, plain %s, with keys %s", tostring(H.Mode and H.Mode:Get()), names, tostring(H.Plain), tostring(H.Alt)))
+    local left = Impl.CameraMark()
+    if left and left > 0 then
+        if H.Keys and H.Mode:Get() == H.Keys then H.Mode:Set(left - 1) end
+        Impl.CameraMark(0)
     end
 end
 
 function Impl.CameraOverIsland()
-    if not UI or not UI.Main.Enabled:Get() then return false end
+    if not UI or not UI.Main.Enabled:Get() or Journey.Hidden then return false end
     if not (Engine.IsInGame and Engine.IsInGame()) then return false end
     local st = StateMachine.TargetState
     if not IsMediaActive() and st ~= StateMachine.States.LARGE_IDLE and st ~= StateMachine.States.NOTIF_CENTER then return false end
@@ -7021,54 +7006,24 @@ function Impl.CameraOverIsland()
     return mx >= lay.x - 12 and mx <= lay.x + lay.w + 12 and my >= lay.y - 12 and my <= lay.y + lay.h + 12
 end
 
-function Impl.CameraHoldTick()
-    local H = Impl.CamHold
+function Impl.CameraTick()
+    local H = Impl.Cam
     local now = os.clock()
     Impl.CameraFind(now)
-
-    if H.Mode and H.Alt and H.Plain then
-        if Impl.CameraOverIsland() then H.OverAt = now end
-        local over = H.OverAt ~= nil and now - H.OverAt < 0.25
-        if over and not H.Orig and H.Mode:Get() == H.Plain then
-            H.Orig = H.Plain
-            H.Mode:Set(H.Alt)
-            Impl.CameraMark(H.Orig + 1)
-            if Dbg.On then Dbg.Log("camera", "cursor over the island, umbrella wheel zoom switched to the mode with keys") end
-        elseif not over and H.Orig then
-            if H.Mode:Get() == H.Alt then H.Mode:Set(H.Orig) end
-            H.Orig = nil
-            Impl.CameraMark(0)
-            if Dbg.On then Dbg.Log("camera", "cursor left the island, umbrella wheel zoom is back to the plain wheel") end
-        end
-        return
+    if not H.Mode or not H.Keys or not H.Plain then return end
+    if Impl.CameraOverIsland() then H.OverAt = now end
+    local over = H.OverAt ~= nil and now - H.OverAt < 0.25
+    if over and not H.Orig and H.Mode:Get() == H.Plain then
+        H.Orig = H.Plain
+        H.Mode:Set(H.Keys)
+        Impl.CameraMark(H.Orig + 1)
+        if Dbg.On then Dbg.Log("camera", "cursor over the island, umbrella wheel zoom needs keys now") end
+    elseif not over and H.Orig then
+        if H.Mode:Get() == H.Keys then H.Mode:Set(H.Orig) end
+        H.Orig = nil
+        Impl.CameraMark(0)
+        if Dbg.On then Dbg.Log("camera", "cursor left the island, umbrella wheel zoom is back") end
     end
-
-    if not H.W then return end
-    local cur = H.W:Get()
-    local window = 0.5
-    if H.Smooth and H.SmoothTime and H.Smooth:Get() == true then
-        window = window + (tonumber(H.SmoothTime:Get()) or 0)
-    end
-    if now - H.At < window then
-        if H.Value and cur ~= H.Value then
-            H.W:Set(H.Value)
-            if Dbg.On and now - (H.LogAt or 0) > 0.3 then
-                H.LogAt = now
-                Dbg.Log("camera", string.format("camera distance moved %s -> %s, %.2f s after the wheel, put back", tostring(H.Value), tostring(cur), now - H.At))
-            end
-        end
-    else
-        H.Value = cur
-    end
-end
-
-function Impl.CameraHold(nowClk)
-    local H = Impl.CamHold
-    if Dbg.On and nowClk - H.At > 1 then
-        Dbg.Log("camera", string.format("wheel over the island, camera distance %s, wheel zoom mode %s", H.W and tostring(H.W:Get()) or "unknown", H.Mode and tostring(H.Mode:Get()) or "unknown"))
-    end
-    H.At = nowClk
-    Impl.CameraHoldTick()
 end
 
 function DynamicIsland.OnKeyEvent(data)
@@ -7110,7 +7065,6 @@ function DynamicIsland.OnKeyEvent(data)
                 elseif isUp and st == StateMachine.States.NOTIF_CENTER then
                     TriggerStateTransition(StateMachine.States.LARGE_IDLE)
                 end
-                Impl.CameraHold(os.clock())
                 return false
             end
         end
@@ -7172,7 +7126,6 @@ function DynamicIsland.OnKeyEvent(data)
                 MouseInput.LastKeyEventWheelTime = nowClk
                 VolumeState.LastActive = nowClk
                 VolumeState.Visible = true
-                Impl.CameraHold(nowClk)
                 return false
             end
         end
@@ -7391,7 +7344,6 @@ function Impl.HandleInteractions()
                 end
                 VolumeState.LastActive = nowClk
                 VolumeState.Visible = true
-                Impl.CameraHold(nowClk)
             end
         end
     end
@@ -15796,7 +15748,6 @@ function DynamicIsland.OnFrame()
     local inGame = Engine.IsInGame and Engine.IsInGame()
     if UI.Main.OnlyInGame:Get() and not inGame then return end
     if Journey.Hidden then return end
-    Fuse.Guard("camera", Impl.CameraHoldTick)
 
     if Menu.Opened then
         local isOpened = Menu.Opened()
@@ -16137,7 +16088,7 @@ function DynamicIsland.OnUpdateEx()
         CourierTracker.CachedCourier = nil
     end
     MouseInput.LiveAt = os.clock()
-    Fuse.Guard("camera", Impl.CameraHoldTick)
+    Fuse.Guard("camera", Impl.CameraTick)
     Fuse.Guard("input", Impl.HandleInteractions)
     Fuse.Guard("media", Impl.PollMediaBridge)
     Fuse.Guard("level", Impl.PollLevel)
