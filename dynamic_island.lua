@@ -6956,12 +6956,20 @@ function Impl.CameraHoldTick()
         if now < H.Next then return end
         H.Next = now + 5
         H.W = Menu.Find("Info Screen", "Main", "Camera", "Main", "Camera Settings", "Camera Distance")
+        if Dbg.On and H.Found ~= (H.W ~= nil) then
+            H.Found = H.W ~= nil
+            Dbg.Log("camera", H.W and ("umbrella camera distance slider found, value " .. tostring(H.W:Get())) or "umbrella camera distance slider not found")
+        end
         if not H.W then return end
     end
     local cur = H.W:Get()
-    if now - H.At < 0.3 then
+    if now - H.At < 0.4 then
         if H.Value and cur ~= H.Value then
             H.W:Set(H.Value)
+            if Dbg.On and now - (H.LogAt or 0) > 1 then
+                H.LogAt = now
+                Dbg.Log("camera", string.format("wheel over the island moved the camera distance %s -> %s, put back, slider now reads %s", tostring(H.Value), tostring(cur), tostring(H.W:Get())))
+            end
         end
     else
         H.Value = cur
@@ -6969,7 +6977,11 @@ function Impl.CameraHoldTick()
 end
 
 function Impl.CameraHold(nowClk)
-    Impl.CamHold.At = nowClk
+    local H = Impl.CamHold
+    if Dbg.On and nowClk - H.At > 1 then
+        Dbg.Log("camera", "wheel over the island, camera distance " .. (H.W and tostring(H.W:Get()) or "unknown") .. ", remembered " .. tostring(H.Value))
+    end
+    H.At = nowClk
     Impl.CameraHoldTick()
 end
 
@@ -15698,6 +15710,7 @@ function DynamicIsland.OnFrame()
     local inGame = Engine.IsInGame and Engine.IsInGame()
     if UI.Main.OnlyInGame:Get() and not inGame then return end
     if Journey.Hidden then return end
+    Fuse.Guard("camera", Impl.CameraHoldTick)
 
     if Menu.Opened then
         local isOpened = Menu.Opened()
