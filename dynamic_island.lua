@@ -4438,7 +4438,7 @@ local function SendMediaCommand(cmd)
     local url = string.format("http://127.0.0.1:%d/media/%s", port, cmd)
     pcall(Impl.HttpRequest, "GET", url, {}, function(res)
         if Dbg.On then Dbg.MediaReply(base, res, sentAt) end
-        if res and res.response and res.response ~= "" then
+        if (base == "volup" or base == "voldown") and res and res.response and res.response ~= "" then
             local vStr = string.match(res.response, '"volume"%s*:%s*(%d+)')
             if vStr then
                 local v = tonumber(vStr)
@@ -5950,6 +5950,10 @@ end
 
 function Impl.RoshanAttacked(now, subtitle, source)
     local ros = GameTracker.Roshan
+    if ros.HpKnown and ((ros.LastHP or 0) <= 0 or (ros.SpawnAt and now - ros.SpawnAt < 6.0)) then
+        if Dbg.On then Dbg.Log("roshan", "attack signal ignored, roshan just spawned or is dead: " .. source) end
+        return
+    end
     local fresh = now - ros.LastAttackAlert > 15.0
     ros.LastAttackAlert = now
     if not fresh then return end
@@ -5980,6 +5984,8 @@ function Impl.WatchRoshanHealth(now)
     end
     local prev = ros.LastHP
     ros.LastHP = hp
+    ros.HpKnown = true
+    if hp > 0 and (prev or 0) <= 0 then ros.SpawnAt = now end
     if Dbg.On and not ros.HpLogged then
         ros.HpLogged = true
         Dbg.Log("roshan", "health readable, now " .. tostring(hp))
@@ -6027,7 +6033,7 @@ end
 function DynamicIsland.OnStartSound(data)
     if not UI or not UI.Main.Enabled:Get() or not UI.Runes.Roshan:Get() or not data or not data.name then return end
     local snd = string.lower(data.name)
-    if string.find(snd, "roshan") or string.find(snd, "rosh") then
+    if string.find(snd, "rosh") and not string.find(snd, "spawn") then
         Impl.RoshanAttacked(GameRules.GetGameTime(), L("di_ui_combat_audio_detected_in_pit"), "sound " .. snd)
     end
 end
@@ -8232,16 +8238,6 @@ function Impl.HandleInteractions()
                 end
 
                 SendMediaCommand("like")
-                DynamicIsland.PushNotification({
-                    Type = "spotify_like",
-                    Tag = inYandex and L("di_ui_yandex_music") or "Spotify",
-                    Title = isNowLiked and L("di_ui_liked_songs") or L("di_ui_removed_from_favorites"),
-                    Subtitle = isNowLiked and L("di_ui_saved_to_library") or (inYandex and L("di_ui_removed_from_yandex") or L("di_ui_removed_from_spotify")),
-                    AccentColor = Color(255, 55, 95, 255),
-                    IconType = "svg",
-                    FallbackSvg = isNowLiked and "heart_fill" or "heart_outline",
-                    Duration = 2.5
-                })
                 return
             end
         end
@@ -16066,6 +16062,8 @@ function DynamicIsland.OnUpdateEx()
             GameTracker.Roshan.LastHP = nil
             GameTracker.Roshan.HpAt = nil
             GameTracker.Roshan.HpLogged = nil
+            GameTracker.Roshan.HpKnown = nil
+            GameTracker.Roshan.SpawnAt = nil
             GameTracker.Roshan.AegisClaimedAt = nil
             GameTracker.Roshan.AegisClaimedBy = nil
             GameTracker.Roshan.Dismissed = false
