@@ -6466,7 +6466,9 @@ function Impl.CourierBegin(nowClk, viaStash, source)
     T.OffSince = nil
     T.NearSince = nil
     T.Block = false
-    T.GraceUntil = nowClk + (source == "state" and 0 or 3.0)
+    T.GraceUntil = nowClk + 3.0
+    T.TowardAt = nowClk
+    T.MoveAt = nil
     if Dbg.On then Dbg.Log("courier", "delivery started by " .. source .. (viaStash and ", through the stash" or "")) end
     if StateMachine.TargetState ~= StateMachine.States.COURIER_DELIVERY and StateMachine.TargetState ~= StateMachine.States.COURIER_LARGE then
         TriggerStateTransition(StateMachine.States.COURIER_DELIVERY)
@@ -6766,9 +6768,28 @@ function Impl.ProcessCourierTracker()
     if T.ViaStash and ordered > 0.3 and (isAtBaseState or distBase < 350 or not hasStashItems) then
         T.ViaStash = false
         T.GraceUntil = math.max(T.GraceUntil, nowClk + 3.0)
+        T.TowardAt = nowClk
+        if Dbg.On then Dbg.Log("courier", "stash picked up, heading to the hero") end
     end
     T.IsGoingToStash = T.ViaStash
     T.Carry = math.max(T.Carry, itemCount)
+
+    if PauseTracker.IsPaused then
+        T.TowardAt = nowClk
+        T.MoveAt = nil
+    elseif not T.MoveAt or nowClk - T.MoveAt >= 0.25 then
+        if T.MoveAt and nowClk - T.MoveAt < 1.0 then
+            local goal = T.IsGoingToStash and basePos or hOrigin
+            local dx, dy = cOrigin.x - T.MoveX, cOrigin.y - T.MoveY
+            local gx, gy = goal.x - T.MoveX, goal.y - T.MoveY
+            local moved = math.sqrt(dx * dx + dy * dy)
+            local gl = math.sqrt(gx * gx + gy * gy)
+            if moved > 20 and gl > 1 and (dx * gx + dy * gy) / (moved * gl) > 0.3 then
+                T.TowardAt = nowClk
+            end
+        end
+        T.MoveAt, T.MoveX, T.MoveY = nowClk, cOrigin.x, cOrigin.y
+    end
 
     local eta, remainingDist = Impl.CourierTravel(cOrigin, hOrigin, basePos, T.IsGoingToStash, speed, distBase)
     if remainingDist > T.StartDistance then
@@ -6778,7 +6799,8 @@ function Impl.ProcessCourierTracker()
     T.Progress = math.max(T.Progress, math.max(0.0, math.min(1.0, prog)))
     T.ETA = math.ceil(eta)
 
-    if onRoute or (T.IsGoingToStash and (isReturningState or isAtBaseState)) then
+    local atShop = cState == CS.COURIER_STATE_GOING_TO_SECRET_SHOP or cState == CS.COURIER_STATE_AT_SECRET_SHOP
+    if not atShop and nowClk - (T.TowardAt or 0) < 2.0 then
         T.OffSince = nil
     else
         T.OffSince = T.OffSince or nowClk
@@ -6824,7 +6846,7 @@ function Impl.ProcessCourierTracker()
             TriggerStateTransition(StateMachine.States.COURIER_DELIVERED)
         end
     elseif T.OffSince and nowClk - T.OffSince > 0.5 and nowClk > T.GraceUntil then
-        Impl.CourierStop("courier is doing something else, state " .. tostring(cState))
+        Impl.CourierStop(string.format("courier is not heading to the %s, state %s, %.0f from the hero", T.IsGoingToStash and "base" or "hero", tostring(cState), distHero))
     elseif ordered > 120.0 then
         Impl.CourierStop("took over two minutes")
     end
