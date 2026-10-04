@@ -542,6 +542,7 @@ local localization = qLocalization.new({
         di_ui_enemy_hero = "Enemy Hero",
         di_ui_lane = "Lane",
         di_ui_bridge_offline = "MediaBridge isn't running, music and sounds are off",
+        di_ui_bridge_stalled = "Umbrella is holding back MediaBridge answers, music will catch up",
         di_ui_media_service_down = "Windows media service isn't responding, restart your PC",
         di_ui_update_available = "Update available: ",
         di_ui_skirmish_concluded = "Skirmish Concluded",
@@ -1178,6 +1179,7 @@ local localization = qLocalization.new({
         di_ui_enemy_hero = "Вражеский герой",
         di_ui_lane = "Линия",
         di_ui_bridge_offline = "MediaBridge не запущен, музыка и звуки выключены",
+        di_ui_bridge_stalled = "Umbrella задерживает ответы MediaBridge, музыка обновится позже",
         di_ui_media_service_down = "Служба медиа Windows не отвечает, перезагрузи ПК",
         di_ui_update_available = "Доступно обновление: ",
         di_ui_skirmish_concluded = "Стычка окончена",
@@ -3100,6 +3102,7 @@ Impl.AlertSound = { notification_toast = true, timer_chime = true, courier_deliv
 
 local function HapticPlaySound(appleSoundName, arg2, arg3)
     if Haptic.Quiet then return end
+    if Impl.BridgeLagging() then return end
     local alert = Impl.AlertSound[appleSoundName] == true
     local H = UI and UI.Haptics
     if alert then
@@ -4680,6 +4683,7 @@ function Impl.PollMediaBridge()
     if MediaData.PollBusy and clk - MediaData.PollBusy < 2.0 then return end
     MediaData.LastPollTime = clk
     MediaData.PollBusy = clk
+    MediaData.PendingSince = MediaData.PendingSince or clk
 
     local port = 45455
     if not Impl.MediaQuery then
@@ -4695,6 +4699,7 @@ function Impl.PollMediaBridge()
 
     pcall(Impl.HttpRequest, "GET", url, {}, function(res)
         MediaData.PollBusy = nil
+        MediaData.PendingSince = nil
         if not res or not res.response or res.response == "" then return end
         local body = res.response
         if string.find(body, '"is_playing"', 1, true) then Impl.BridgeAlive() end
@@ -4861,7 +4866,18 @@ function Impl.BridgeAlive()
     end
 end
 
+function Impl.BridgeLagging()
+    local clk = os.clock()
+    local m, b = MediaData.PendingSince, BridgeStatus.PendingSince
+    return (m ~= nil and clk - m > 1.0) or (b ~= nil and clk - b > 1.0)
+end
+
+function Impl.BridgeRefused()
+    return (BridgeStatus.FailAt or 0) > BridgeStatus.LastOk
+end
+
 function Impl.BridgeFail(what, res)
+    BridgeStatus.FailAt = os.clock()
     if BridgeStatus.Down then return end
     local clk = os.clock()
     if BridgeStatus.LastOk > 0 and clk - BridgeStatus.LastOk < 10 then return end
@@ -4878,9 +4894,11 @@ function Impl.PollBridgeStatus()
     if BridgeStatus.Busy and clk - BridgeStatus.Busy < 4.0 then return end
     BridgeStatus.LastPoll = clk
     BridgeStatus.Busy = clk
+    BridgeStatus.PendingSince = BridgeStatus.PendingSince or clk
     if BridgeStatus.FirstPoll == 0 then BridgeStatus.FirstPoll = clk end
     pcall(Impl.HttpRequest, "GET", "http://127.0.0.1:45455/status", {}, function(res)
         BridgeStatus.Busy = nil
+        BridgeStatus.PendingSince = nil
         local body = res and res.response or ""
         if not string.find(body, '"status"', 1, true) then
             Impl.BridgeFail("/status", res)
@@ -4981,7 +4999,7 @@ function Impl.CollectStatusHints()
     local settled = BridgeStatus.FirstPoll > 0 and (clk - BridgeStatus.FirstPoll) > 6.0
 
     if UI and UI.Media and UI.Media.Enabled:Get() and settled and not online then
-        table.insert(out, { text = L("di_ui_bridge_offline"), dot = Color(255, 159, 10, 255) })
+        table.insert(out, { text = L(Impl.BridgeRefused() and "di_ui_bridge_offline" or "di_ui_bridge_stalled"), dot = Color(255, 159, 10, 255) })
     elseif online and BridgeStatus.MediaSessions == "timeout" then
         table.insert(out, { text = L("di_ui_media_service_down"), dot = Color(255, 159, 10, 255) })
     end
@@ -11749,7 +11767,7 @@ function Sheet.BridgeOnline()
 end
 
 function Sheet.BridgeMissing(now)
-    return BridgeStatus.FirstPoll > 0 and (now - BridgeStatus.FirstPoll) > 6 and not Sheet.BridgeOnline()
+    return BridgeStatus.FirstPoll > 0 and (now - BridgeStatus.FirstPoll) > 6 and not Sheet.BridgeOnline() and Impl.BridgeRefused()
 end
 
 function Sheet.UpdateInfo()
@@ -13647,7 +13665,7 @@ Dbg.Watches = {
     { "game paused", function() return PauseTracker.IsPaused end },
     { "fight", function() return FightTracker.Active end },
     { "focus", function() return Focus.Active end },
-    { "bridge", function() return Sheet.BridgeOnline() and ("online v" .. tostring(BridgeStatus.Version)) or "offline" end },
+    { "bridge", function() return Sheet.BridgeOnline() and ("online v" .. tostring(BridgeStatus.Version)) or (Impl.BridgeRefused() and "offline" or "answers held back by umbrella") end },
     { "bridge media sessions", function() return BridgeStatus.MediaSessions end },
     { "media", function() return IsMediaActive() and (MediaData.IsPlaying and "playing" or "paused") or "none" end },
     { "track", function() return MediaData.HasReceivedData and (MediaData.Artist .. " - " .. MediaData.Title .. " [" .. tostring(MediaData.App) .. "]") or "none" end },
