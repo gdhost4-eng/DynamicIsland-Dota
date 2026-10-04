@@ -6950,13 +6950,20 @@ end
 Impl.CamHold = { At = 0, Next = 0 }
 
 function Impl.CameraMark(value)
-    local store = _G.Config
-    if type(store) ~= "table" and type(store) ~= "userdata" then return nil end
-    if value == nil then
-        local ok, v = pcall(store.ReadInt, "dynamic_island", "cam_wheel", 0)
-        return ok and tonumber(v) or nil
+    for _, path in ipairs({ "dynamic_island_cam.txt", "scripts/dynamic_island_cam.txt" }) do
+        local f = Impl.OpenFile(path, value == nil and "r" or "w")
+        if f then
+            if value == nil then
+                local v = tonumber(f:read("l") or "")
+                f:close()
+                return v
+            end
+            f:write(tostring(value))
+            f:close()
+            return nil
+        end
     end
-    pcall(store.WriteInt, "dynamic_island", "cam_wheel", value)
+    return nil
 end
 
 function Impl.CameraFind(now)
