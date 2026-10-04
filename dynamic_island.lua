@@ -6774,7 +6774,23 @@ function Impl.ProcessCourierTracker()
 
     Impl.CourierLearnZone(c, distBase, speed, inFountain)
 
-    if not T.Delivering and not T.Delivered and not T.Block and onRoute and distHero > 450 and myHero and Entity.IsAlive(myHero) then
+    local approaching = false
+    if not T.Delivering and onRoute and cOrigin and hOrigin then
+        if T.SeekAt and nowClk - T.SeekAt >= 0.25 and nowClk - T.SeekAt < 1.0 then
+            local dx, dy = cOrigin.x - T.SeekX, cOrigin.y - T.SeekY
+            local hx, hy = hOrigin.x - T.SeekX, hOrigin.y - T.SeekY
+            local moved = math.sqrt(dx * dx + dy * dy)
+            local hl = math.sqrt(hx * hx + hy * hy)
+            approaching = moved > 20 and hl > 1 and (dx * hx + dy * hy) / (moved * hl) > 0.5
+        end
+        if not T.SeekAt or nowClk - T.SeekAt >= 0.25 then
+            T.SeekAt, T.SeekX, T.SeekY = nowClk, cOrigin.x, cOrigin.y
+        end
+    else
+        T.SeekAt = nil
+    end
+
+    if not T.Delivering and not T.Delivered and not T.Block and onRoute and approaching and distHero > 450 and myHero and Entity.IsAlive(myHero) then
         Impl.CourierBegin(nowClk, false, "state")
     end
 
