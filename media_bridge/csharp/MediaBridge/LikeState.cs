@@ -25,7 +25,7 @@ public static class LikeState
             _nextQuery = now.AddSeconds(0.5);
             _holdUntil = DateTime.MinValue;
         }
-        if (player == "" || trackKey == "" || !SpotifyFlags.Enabled) return;
+        if (player == "" || trackKey == "" || (player != "yandex" && !SpotifyFlags.Enabled)) return;
         if (now < _nextQuery || now < _holdUntil) return;
         if (Interlocked.CompareExchange(ref _busy, 1, 0) != 0) return;
         _nextQuery = now.AddSeconds(player == "yandex" ? 2.5 : 15);
