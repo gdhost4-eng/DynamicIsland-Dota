@@ -662,7 +662,7 @@ local localization = qLocalization.new({
         di_main_hello = "Hello on Launch",
         di_main_hello_tip = "The iPhone style hello\nwhen Dota starts",
         di_main_update_remind = "Update Reminders",
-        di_main_update_remind_tip = "Shows a card when a new version is out.\nWhen off, only the dot on the island stays",
+        di_main_update_remind_tip = "Shows a card and a dot on the island\nwhen a new version is out",
         di_main_setup = "Run Setup Again",
         di_main_setup_tip = "Opens the setup assistant again.\nWorks in the main menu",
         di_hello_swipe = "Swipe up to get started",
@@ -1301,7 +1301,7 @@ local localization = qLocalization.new({
         di_main_hello = "Приветствие при запуске",
         di_main_hello_tip = "Приветствие как на айфоне\nпри запуске доты",
         di_main_update_remind = "Напоминать об обновлениях",
-        di_main_update_remind_tip = "Показывает карточку, когда вышла новая версия.\nЕсли выключить, останется только точка на островке",
+        di_main_update_remind_tip = "Показывает карточку и точку на островке,\nкогда вышла новая версия",
         di_main_setup = "Пройти настройку заново",
         di_main_setup_tip = "Заново открывает помощник настройки.\nРаботает в главном меню",
         di_hello_swipe = "Смахни вверх, чтобы начать",
@@ -8041,7 +8041,6 @@ function Impl.HandleInteractions()
             end
         elseif isHover and StateMachine.TargetState == StateMachine.States.MENU_IDLE and Sheet.BadgeOn() then
             Sheet.Dismissed = false
-            Sheet.Wanted = true
             Sheet.MenuSince = nowClk - 2
             Haptic.Trigger(Haptic.Types.TAP_MEDIUM)
             return
@@ -11843,7 +11842,7 @@ function Sheet.RemindOff()
 end
 
 function Sheet.BadgeOn()
-    return (Sheet.Dismissed or Sheet.RemindOff()) and Sheet.Upd.State == "idle" and Sheet.UpdateInfo() ~= nil
+    return Sheet.Dismissed and not Sheet.RemindOff() and Sheet.Upd.State == "idle" and Sheet.UpdateInfo() ~= nil
 end
 
 function Sheet.Pick(now)
@@ -11866,7 +11865,7 @@ function Sheet.Pick(now)
         kind = "bridge"
     elseif not Sheet.FontsDismissed and Sheet.BridgeOnline() and BridgeStatus.FontsOk == false then
         kind = "fonts"
-    elseif not Sheet.Dismissed and (Sheet.Wanted or not Sheet.RemindOff()) and Sheet.UpdateInfo() then
+    elseif not Sheet.Dismissed and not Sheet.RemindOff() and Sheet.UpdateInfo() then
         kind = "update"
     end
     Sheet.Kind = kind or Sheet.Kind
@@ -11994,7 +11993,6 @@ end
 function Sheet.Action(action, now)
     if action == "later" then
         Sheet.Dismissed = true
-        Sheet.Wanted = false
         Sheet.Upd.State = "idle"
     elseif action == "install" then
         Sheet.StartUpdate(now)
