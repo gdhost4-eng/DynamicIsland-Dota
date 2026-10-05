@@ -5020,7 +5020,7 @@ function Impl.CollectStatusHints()
         table.insert(out, { text = L("di_ui_module_off"), dot = Color(255, 69, 58, 255) })
     end
     local latest = Impl.ParseVersion(BridgeStatus.Latest)
-    if latest then
+    if latest and not Sheet.RemindOff() then
         local mine = Impl.ParseVersion(SCRIPT_VERSION)
         local bridge = Impl.ParseVersion(BridgeStatus.Version)
         if (mine and Impl.VersionLess(mine, latest)) or (bridge and Impl.VersionLess(bridge, latest)) then
