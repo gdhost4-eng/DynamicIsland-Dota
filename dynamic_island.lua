@@ -4567,9 +4567,13 @@ function Impl.Plan(inCombat, mediaActive, now)
         list[#list + 1] = { kind = kind, act = act }
     end
     local media = mediaActive and not HUDCustomizer.IsOpen
+    local pa
     if PauseTracker.IsPaused and ToggleOn(UI and UI.Combat and UI.Combat.PauseAlert) then
+        pa = not HUDCustomizer.IsOpen and Sdk.PauseAct() or nil
         if media then add("media") end
+        if pa and media then add("sdk", pa) end
         add("pause")
+        if pa then add("sdk", pa) end
     end
     if inCombat then add("fight") end
     if media then add("media") end
@@ -4581,7 +4585,7 @@ function Impl.Plan(inCombat, mediaActive, now)
         local cur = Sdk.Current()
         if cur then
             add("sdk", cur)
-            local sec = Sdk.Second()
+            local sec = (pa and cur ~= pa) and cur or Sdk.Second()
             if sec then add("sdk2", sec) end
         end
     end
@@ -12374,7 +12378,7 @@ Sdk.LogBudget = 40
 Sdk.Images = {}
 Sdk.ImageCount = 0
 Sdk.Hook = debug and debug.sethook and debug.gethook and { set = debug.sethook, get = debug.gethook } or nil
-Sdk.Features = { notify = true, activity = true, queue = true, levels = true, sounds = true, body = true, actions = true, trailing = true, onEnd = true, staleAfter = true, endAfter = true, playSound = true, focus = true, widgets = true, faceId = true }
+Sdk.Features = { notify = true, activity = true, queue = true, levels = true, sounds = true, body = true, actions = true, trailing = true, onEnd = true, staleAfter = true, endAfter = true, playSound = true, focus = true, widgets = true, faceId = true, pause = true }
 Sdk.SoundFiles = { notification_toast = true, timer_chime = true, courier_delivered = true, courier_death_or_fail = true, button_press = true, button_dismiss = true, wheel_notch = true, wheel_boundary_bump = true, island_expand = true, island_collapse = true, island_hover = true, toast_dismiss = true }
 Sdk.Levels = { passive = 1, active = 3, ["time-sensitive"] = 5 }
 Sdk.Sounds = { default = "notification_toast", chime = "timer_chime", success = "courier_delivered", failure = "courier_death_or_fail" }
@@ -12905,6 +12909,7 @@ function Sdk.ActApply(a, o)
     if o.staleAfter ~= nil then
         a.staleAfter = Sdk.Num(o.staleAfter, 5, 86400)
     end
+    if o.pause ~= nil then a.pause = o.pause == true end
     a.touched = os.clock()
 end
 
@@ -12998,6 +13003,14 @@ function Sdk.Second()
     for i = #Sdk.Acts, 1, -1 do
         local a = Sdk.Acts[i]
         if a ~= first and Sdk.Apps[a.app] == true and not Sdk.Muted[a.app] then return a end
+    end
+    return nil
+end
+
+function Sdk.PauseAct()
+    for i = #Sdk.Acts, 1, -1 do
+        local a = Sdk.Acts[i]
+        if a.pause and Sdk.Apps[a.app] == true and not Sdk.Muted[a.app] then return a end
     end
     return nil
 end
